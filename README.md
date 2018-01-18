@@ -18,7 +18,7 @@ The project is packages as a jar file and bundles the prometheus client librarie
 $ gradle jar
 ```
 
-build the project. The result jar will be written to _build/libs_.
+builds the jar and writes it to _build/libs_.
 
 ## Usage
 
