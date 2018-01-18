@@ -22,4 +22,4 @@ builds the jar and writes it to _build/libs_.
 
 ## Usage
 
-To use the metrics, make sure that the event listener is added to your Realm. Go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
+Just drop the jar into the _providers_ subdirectory of your KeyCloak installation. To enbale the event listener go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
