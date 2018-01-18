@@ -11,4 +11,4 @@ Two distinct SPIs are defined:
 The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
 you use in the URL (you can just default to `/auth/realms/master/metrics`).
 
-At the moment the endpoint exposes JVM performance metrics. Handling of internal KeyCloak events will be added shortly.
+To use the metrics, make sure that the event listener is added to your Realm. Go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
