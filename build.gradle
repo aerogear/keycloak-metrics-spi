@@ -1,0 +1,37 @@
+repositories {
+    jcenter()
+}
+
+configurations {
+    bundleLib
+}
+
+group 'org.jboss.aerogear'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.keycloak', name: 'keycloak-server-spi-private', version: '3.2.1.Final'
+    compile group: 'org.keycloak', name: 'keycloak-server-spi', version: '3.2.1.Final'
+    compile group: 'org.keycloak', name: 'keycloak-services', version: '3.2.1.Final'
+    compile group: 'org.jboss.spec.javax.ws.rs', name: 'jboss-jaxrs-api_2.0_spec', version: '1.0.0.Final'
+    bundleLib group: 'io.prometheus', name: 'simpleclient', version: '0.1.0'
+    bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: '0.1.0'
+    bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.1.0'
+    configurations.compile.extendsFrom(configurations.bundleLib)
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    from {
+        configurations.bundleLib.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
