@@ -6,31 +6,41 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.keycloak.events.Event;
+import org.keycloak.events.EventType;
+import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.OperationType;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class PrometheusExporter {
+public final class PrometheusExporter {
   private final static PrometheusExporter INSTANCE = new PrometheusExporter();
-  private final static Gauge loggedInUsers;
-  private final static Counter failedLoginAttempts;
+  private final static String USER_EVENT_PREFIX = "kc_user_event_";
+  private final static String ADMIN_EVENT_PREFIX = "kc_admin_event_";
 
-  private final static CollectorRegistry registry;
+  private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
+  public final static Map<String, Counter> counters = new HashMap<>();
+
+  // We want to keep track of the logged in users separately
+  public final static Gauge loggedInUsers = Gauge.build()
+    .name("kc_logged_in_users")
+    .help("Currently logged in users")
+    .labelNames("realm")
+    .register();
 
   static {
-    registry = CollectorRegistry.defaultRegistry;
+    // Counters for all user events
+    for (EventType type : EventType.values()) {
+      final String eventName = USER_EVENT_PREFIX + type.name();
+      counters.put(eventName, createCounter(eventName, false));
+    }
 
-    // Gauge to record logged in users over time
-    loggedInUsers = Gauge.build()
-      .name("logged_in_users")
-      .help("Logged in Users")
-      .labelNames("realm")
-      .register();
-
-    failedLoginAttempts = Counter.build()
-      .name("failed_login_attempts")
-      .help("Failed login attempts")
-      .labelNames("realm")
-      .register();
+    // Counters for all admin events
+    for (OperationType type : OperationType.values()) {
+      final String eventName = ADMIN_EVENT_PREFIX + type.name();
+      counters.put(eventName, createCounter(eventName, true));
+    }
   }
 
   private PrometheusExporter() {
@@ -49,20 +59,66 @@ public class PrometheusExporter {
     return INSTANCE;
   }
 
-  public void recordUserLogin(Event event) {
+  // Creates a counter based on a event name
+  private static Counter createCounter(final String name, boolean isAdmin) {
+    final Counter.Builder counter = Counter.build().name(name);
+
+    if (isAdmin) {
+      counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
+    } else {
+      counter.labelNames("realm").help("Generic KeyCloak User event");
+    }
+
+    return counter.register();
+  }
+
+  /**
+   * Count generic user event
+   *
+   * @param event User event
+   */
+  public void recordUserEvent(final Event event) {
+    final String eventName = USER_EVENT_PREFIX + event.getType().name();
+    counters.get(eventName).labels(event.getRealmId()).inc();
+  }
+
+  /**
+   * Count generic admin event
+   *
+   * @param event Admin event
+   */
+  public void recordAdminEvent(final AdminEvent event) {
+    final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
+    counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
+  }
+
+  /**
+   * Increase the number of currently logged in users
+   *
+   * @param event Login or Impersonate event
+   */
+  public void recordUserLogin(final Event event) {
     loggedInUsers.labels(event.getRealmId()).inc();
   }
 
-  public void recordUserLogout(Event event) {
+  /**
+   * Decrease the number of currently logged in users
+   *
+   * @param event Logout event
+   */
+  public void recordUserLogout(final Event event) {
     loggedInUsers.labels(event.getRealmId()).dec();
   }
 
-  public void recordFailedLogin(Event event) {
-    failedLoginAttempts.labels(event.getRealmId()).inc();
-  }
-
-  public void export(OutputStream stream) throws IOException {
-    Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
+  /**
+   * Write the Prometheus formatted values of all counters and
+   * gauges to the stream
+   *
+   * @param stream Output stream
+   * @throws IOException
+   */
+  public void export(final OutputStream stream) throws IOException {
+    final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
     TextFormat.write004(writer, registry.metricFamilySamples());
     writer.flush();
   }
