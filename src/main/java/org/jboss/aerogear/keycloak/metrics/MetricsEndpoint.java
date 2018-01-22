@@ -20,7 +20,7 @@ public class MetricsEndpoint implements RealmResourceProvider {
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   public Response get() {
-    StreamingOutput stream = output -> PrometheusExporter.instance().export(output);
+    final StreamingOutput stream = output -> PrometheusExporter.instance().export(output);
     return Response.ok(stream).build();
   }
 

@@ -18,16 +18,21 @@ public class MetricsEventListener implements EventListenerProvider {
     switch (event.getType()) {
       case LOGIN:
       case IMPERSONATE:
+        // Login and Impersonate both increase the number of currently
+        // logged in users
         PrometheusExporter.instance().recordUserLogin(event);
+        PrometheusExporter.instance().recordUserEvent(event);
         break;
-      case LOGIN_ERROR:
-      case IMPERSONATE_ERROR:
-        PrometheusExporter.instance().recordFailedLogin(event);
       case LOGOUT:
+        // Logout is the only action that decreases the number of currently
+        // logged in users
         PrometheusExporter.instance().recordUserLogout(event);
+        PrometheusExporter.instance().recordUserEvent(event);
+        break;
       default:
-        // Ignore other event types for now
-        return;
+        // Default action: record all other events in a generic way
+        PrometheusExporter.instance().recordUserEvent(event);
+        break;
     }
   }
 
@@ -37,6 +42,8 @@ public class MetricsEventListener implements EventListenerProvider {
       event.getOperationType().name(),
       event.getResourceType().name(),
       event.getRealmId());
+
+    PrometheusExporter.instance().recordAdminEvent(event);
   }
 
   @Override

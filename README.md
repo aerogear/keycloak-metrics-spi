@@ -10,12 +10,18 @@ Two distinct providers are defined:
 The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
 you use in the URL (you can just default to `/auth/realms/master/metrics`).
 
+## Running the tests
+
+```sh
+$ ./gradlew test
+```
+
 ## Build
 
 The project is packages as a jar file and bundles the prometheus client libraries.
 
 ```sh
-$ gradle jar
+$ ./gradlew jar
 ```
 
 builds the jar and writes it to _build/libs_.
@@ -23,3 +29,7 @@ builds the jar and writes it to _build/libs_.
 ## Usage
 
 Just drop the jar into the _providers_ subdirectory of your KeyCloak installation. To enbale the event listener go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
+
+## Metrics
+
+The endpoint will return JVM performance metrics, counters of all KeyCloak events and the number of logged in users (_kc_logged_in_users_).
