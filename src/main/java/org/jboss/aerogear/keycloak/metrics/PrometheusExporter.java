@@ -15,111 +15,134 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class PrometheusExporter {
-  private final static PrometheusExporter INSTANCE = new PrometheusExporter();
-  private final static String USER_EVENT_PREFIX = "kc_user_event_";
-  private final static String ADMIN_EVENT_PREFIX = "kc_admin_event_";
 
-  private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
-  public final static Map<String, Counter> counters = new HashMap<>();
+    private final static String USER_EVENT_PREFIX = "kc_user_event_";
+    private final static String ADMIN_EVENT_PREFIX = "kc_admin_event_";
+    private final static PrometheusExporter INSTANCE = new PrometheusExporter();
+    private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
+    private final static Map<String, Counter> counters = new HashMap<>();
 
-  // We want to keep track of the logged in users separately
-  public final static Gauge loggedInUsers = Gauge.build()
-    .name("kc_logged_in_users")
-    .help("Currently logged in users")
-    .labelNames("realm")
-    .register();
+    private final static Gauge totalLogins = Gauge.build()
+            .name("kc_logins")
+            .help("Total successful logins")
+            .labelNames("realm")
+            .register();
 
-  static {
-    // Counters for all user events
-    for (EventType type : EventType.values()) {
-      final String eventName = USER_EVENT_PREFIX + type.name();
-      counters.put(eventName, createCounter(eventName, false));
+    private final static Gauge totalFailedLoginAttempts = Gauge.build()
+            .name("kc_failed_login_attempts")
+            .help("Total failed login attempts")
+            .labelNames("realm")
+            .register();
+
+    private final static Gauge totalRegistrations = Gauge.build()
+            .name("kc_registrations")
+            .help("Total registered users")
+            .labelNames("realm")
+            .register();
+
+    static {
+        // Counters for all user events
+        for (EventType type : EventType.values()) {
+            final String eventName = USER_EVENT_PREFIX + type.name();
+            counters.put(eventName, createCounter(eventName, false));
+        }
+
+        // Counters for all admin events
+        for (OperationType type : OperationType.values()) {
+            final String eventName = ADMIN_EVENT_PREFIX + type.name();
+            counters.put(eventName, createCounter(eventName, true));
+        }
     }
 
-    // Counters for all admin events
-    for (OperationType type : OperationType.values()) {
-      final String eventName = ADMIN_EVENT_PREFIX + type.name();
-      counters.put(eventName, createCounter(eventName, true));
-    }
-  }
+    private PrometheusExporter() {
+        // The metrics collector needs to be a singleton because requiring a
+        // provider from the KeyCloak session (session#getProvider) will always
+        // create a new instance. Not sure if this is a bug in the SPI implementation
+        // or intentional but better to avoid this. The metrics object is single-instance
+        // anyway and all the Gauges are suggested to be static (it does not really make
+        // sense to record the same metric in multiple places)
 
-  private PrometheusExporter() {
-    // The metrics collector needs to be a singleton because requiring a
-    // provider from the KeyCloak session (session#getProvider) will always
-    // create a new instance. Not sure if this is a bug in the SPI implementation
-    // or intentional but better to avoid this. The metrics object is single-instance
-    // anyway and all the Gauges are suggested to be static (it does not really make
-    // sense to record the same metric in multiple places)
-
-    // Initialize the default metrics for the hotspot VM
-    DefaultExports.initialize();
-  }
-
-  public static PrometheusExporter instance() {
-    return INSTANCE;
-  }
-
-  // Creates a counter based on a event name
-  private static Counter createCounter(final String name, boolean isAdmin) {
-    final Counter.Builder counter = Counter.build().name(name);
-
-    if (isAdmin) {
-      counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
-    } else {
-      counter.labelNames("realm").help("Generic KeyCloak User event");
+        // Initialize the default metrics for the hotspot VM
+        DefaultExports.initialize();
     }
 
-    return counter.register();
-  }
+    public static PrometheusExporter instance() {
+        return INSTANCE;
+    }
 
-  /**
-   * Count generic user event
-   *
-   * @param event User event
-   */
-  public void recordUserEvent(final Event event) {
-    final String eventName = USER_EVENT_PREFIX + event.getType().name();
-    counters.get(eventName).labels(event.getRealmId()).inc();
-  }
+    /**
+     * Creates a counter based on a event name
+     */
+    private static Counter createCounter(final String name, boolean isAdmin) {
+        final Counter.Builder counter = Counter.build().name(name);
 
-  /**
-   * Count generic admin event
-   *
-   * @param event Admin event
-   */
-  public void recordAdminEvent(final AdminEvent event) {
-    final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
-    counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
-  }
+        if (isAdmin) {
+            counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
+        } else {
+            counter.labelNames("realm").help("Generic KeyCloak User event");
+        }
 
-  /**
-   * Increase the number of currently logged in users
-   *
-   * @param event Login or Impersonate event
-   */
-  public void recordUserLogin(final Event event) {
-    loggedInUsers.labels(event.getRealmId()).inc();
-  }
+        return counter.register();
+    }
 
-  /**
-   * Decrease the number of currently logged in users
-   *
-   * @param event Logout event
-   */
-  public void recordUserLogout(final Event event) {
-    loggedInUsers.labels(event.getRealmId()).dec();
-  }
+    /**
+     * Count generic user event
+     *
+     * @param event User event
+     */
+    public void recordUserEvent(final Event event) {
+        final String eventName = USER_EVENT_PREFIX + event.getType().name();
+        counters.get(eventName).labels(event.getRealmId()).inc();
+    }
 
-  /**
-   * Write the Prometheus formatted values of all counters and
-   * gauges to the stream
-   *
-   * @param stream Output stream
-   * @throws IOException
-   */
-  public void export(final OutputStream stream) throws IOException {
-    final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
-    TextFormat.write004(writer, registry.metricFamilySamples());
-    writer.flush();
-  }
+    /**
+     * Count generic admin event
+     *
+     * @param event Admin event
+     */
+    public void recordAdminEvent(final AdminEvent event) {
+        final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
+        counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
+    }
+
+    /**
+     * Increase the number of currently logged in users
+     *
+     * @param event Login or Impersonate event
+     */
+    public void recordUserLogin(final Event event) {
+        totalLogins.labels(event.getRealmId()).inc();
+    }
+
+    /**
+     * Increase the number registered users
+     *
+     * @param event Register event
+     */
+    public void recordRegistration(final Event event) {
+        totalRegistrations.labels(event.getRealmId()).inc();
+    }
+
+    /**
+     * Increase the number of failed login attempts
+     *
+     * @param event LoginError event
+     */
+    public void recordLoginError(final Event event) {
+        totalFailedLoginAttempts.labels(event.getRealmId()).inc();
+    }
+
+    /**
+     * Write the Prometheus formatted values of all counters and
+     * gauges to the stream
+     *
+     * @param stream Output stream
+     * @throws IOException
+     */
+    public void export(final OutputStream stream) throws IOException {
+        final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
+        TextFormat.write004(writer, registry.metricFamilySamples());
+        writer.flush();
+    }
+
 }
