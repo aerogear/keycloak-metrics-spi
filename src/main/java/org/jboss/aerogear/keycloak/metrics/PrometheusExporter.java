@@ -5,6 +5,7 @@ import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -16,28 +17,29 @@ import java.util.Map;
 
 public final class PrometheusExporter {
 
-    private final static String USER_EVENT_PREFIX = "kc_user_event_";
-    private final static String ADMIN_EVENT_PREFIX = "kc_admin_event_";
+    private final static String USER_EVENT_PREFIX = "keycloak_user_event_";
+    private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
+    private static final String PROVIDER_KEYCLOAK_OPENID = "keycloak";
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
     private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
     private final static Map<String, Counter> counters = new HashMap<>();
 
     private final static Gauge totalLogins = Gauge.build()
-            .name("kc_logins")
+            .name("keycloak_logins")
             .help("Total successful logins")
-            .labelNames("realm")
+            .labelNames("realm", "provider")
             .register();
 
     private final static Gauge totalFailedLoginAttempts = Gauge.build()
-            .name("kc_failed_login_attempts")
+            .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
-            .labelNames("realm")
+            .labelNames("realm", "provider")
             .register();
 
     private final static Gauge totalRegistrations = Gauge.build()
-            .name("kc_registrations")
+            .name("keycloak_registrations")
             .help("Total registered users")
-            .labelNames("realm")
+            .labelNames("realm", "provider")
             .register();
 
     static {
@@ -111,7 +113,10 @@ public final class PrometheusExporter {
      * @param event Login or Impersonate event
      */
     public void recordUserLogin(final Event event) {
-        totalLogins.labels(event.getRealmId()).inc();
+        final String provider = event.getDetails()
+                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+        totalLogins.labels(event.getRealmId(), provider).inc();
     }
 
     /**
@@ -120,8 +125,12 @@ public final class PrometheusExporter {
      * @param event Register event
      */
     public void recordRegistration(final Event event) {
-        totalRegistrations.labels(event.getRealmId()).inc();
+        final String provider = event.getDetails()
+                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+        totalRegistrations.labels(event.getRealmId(), provider).inc();
     }
+
 
     /**
      * Increase the number of failed login attempts
@@ -129,7 +138,10 @@ public final class PrometheusExporter {
      * @param event LoginError event
      */
     public void recordLoginError(final Event event) {
-        totalFailedLoginAttempts.labels(event.getRealmId()).inc();
+        final String provider = event.getDetails()
+                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+        totalFailedLoginAttempts.labels(event.getRealmId(), provider).inc();
     }
 
     /**
