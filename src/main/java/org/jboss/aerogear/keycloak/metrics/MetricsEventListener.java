@@ -16,12 +16,10 @@ public class MetricsEventListener implements EventListenerProvider {
     public void onEvent(Event event) {
         logEventDetails(event);
 
-        PrometheusExporter.instance().recordUserEvent(event);
-
         switch (event.getType()) {
             case LOGIN:
             case IMPERSONATE:
-                PrometheusExporter.instance().recordUserLogin(event);
+                PrometheusExporter.instance().recordLogin(event);
                 break;
             case REGISTER:
                 PrometheusExporter.instance().recordRegistration(event);
@@ -29,6 +27,8 @@ public class MetricsEventListener implements EventListenerProvider {
             case LOGIN_ERROR:
                 PrometheusExporter.instance().recordLoginError(event);
                 break;
+            default:
+                PrometheusExporter.instance().recordGenericEvent(event);
         }
     }
 
@@ -39,7 +39,7 @@ public class MetricsEventListener implements EventListenerProvider {
 
         if (event.getDetails() != null) {
             logger.info("Event details:");
-            for (Map.Entry<String, String> entry: event.getDetails().entrySet()) {
+            for (Map.Entry<String, String> entry : event.getDetails().entrySet()) {
                 logger.infof("<%s> : <%s>", entry.getKey(), entry.getValue());
             }
         }

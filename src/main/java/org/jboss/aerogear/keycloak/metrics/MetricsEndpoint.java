@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 public class MetricsEndpoint implements RealmResourceProvider {
+
     // The ID of the provider is also used as the name of the endpoint
     public final static String ID = "metrics";
 
