@@ -5,7 +5,6 @@ import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
-import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -45,6 +44,9 @@ public final class PrometheusExporter {
     static {
         // Counters for all user events
         for (EventType type : EventType.values()) {
+            if (type.equals(EventType.LOGIN) || type.equals(EventType.LOGIN_ERROR) || type.equals(EventType.REGISTER)) {
+                break;
+            }
             final String eventName = USER_EVENT_PREFIX + type.name();
             counters.put(eventName, createCounter(eventName, false));
         }
@@ -92,7 +94,7 @@ public final class PrometheusExporter {
      *
      * @param event User event
      */
-    public void recordUserEvent(final Event event) {
+    public void recordGenericEvent(final Event event) {
         final String eventName = USER_EVENT_PREFIX + event.getType().name();
         counters.get(eventName).labels(event.getRealmId()).inc();
     }
@@ -112,7 +114,7 @@ public final class PrometheusExporter {
      *
      * @param event Login or Impersonate event
      */
-    public void recordUserLogin(final Event event) {
+    public void recordLogin(final Event event) {
         final String provider = event.getDetails()
                 .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
 
