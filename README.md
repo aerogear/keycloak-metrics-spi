@@ -32,4 +32,56 @@ Just drop the jar into the _providers_ subdirectory of your KeyCloak installatio
 
 ## Metrics
 
-The endpoint will return JVM performance metrics, counters of all KeyCloak events and the number of logged in users (_kc_logged_in_users_).
+For each metric, the endpoint returns 2 or more lines of information:
+
+* **# HELP**: A small description provided by the SPI.
+* **# TYPE**: The type of metric, namely _counter_ and _gauge_. More info about types at [prometheus.io/docs](https://prometheus.io/docs/concepts/metric_types/).
+* Provided there were any values, the last one recorded. If no value has been recorded yet, no more lines will be given.
+* In case the same metric have different labels, there is a different line for each one. By default all metrics are labeled by realm. More info about labels at [prometheus.io/docs](https://prometheus.io/docs/practices/naming/).
+
+Example:
+```c
+# HELP jvm_memory_bytes_committed Committed (bytes) of a given JVM memory area.
+# TYPE jvm_memory_bytes_committed gauge
+jvm_memory_bytes_committed{area="heap",} 2.00802304E8
+jvm_memory_bytes_committed{area="nonheap",} 2.0217856E8
+```
+
+### JVM performance
+A variety of JVM metrics are provided
+
+### Generic events
+Every single internal Keycloak event is being shared through the endpoint, with the descriptions `Generic KeyCloak User event` or `Generic KeyCloak Admin event`. Most of these events are not likely useful for the majority users but are provided for good measure. A complete list of the events can be found at [Keycloak documentation](http://www.keycloak.org/docs-api/3.2/javadocs/org/keycloak/events/EventType.html).
+
+### Featured events
+There are however a few events that are particularly more useful from a mobile app perspective. These events have been overriden by the SPI and are described more thoroughly below.
+
+##### keycloak_logins
+This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider**.
+
+```c
+# HELP keycloak_logins Total successful logins
+# TYPE keycloak_logins gauge
+keycloak_logins{realm="test",provider="keycloak",} 3.0
+keycloak_logins{realm="test",provider="github",} 2.0
+```
+
+##### keycloak_failed_login_attempts
+This counter counts every login performed by a non-admin user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider**.
+
+```c
+# HELP keycloak_failed_login_attempts Total failed login attempts
+# TYPE keycloak_failed_login_attempts gauge
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_user_credentials"} 6.0
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found"} 2.0
+```
+
+##### keycloak_registrations
+This counter counts every new user registration. It also distinguishes registrations by the identity provider used by means of the label **provider**.
+
+```c
+# HELP keycloak_registrations Total registered users
+# TYPE keycloak_registrations gauge
+keycloak_registrations{realm="test",provider="keycloak",} 1.0
+keycloak_registrations{realm="test",provider="github",} 1.0
+```
