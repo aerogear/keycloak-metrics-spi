@@ -104,7 +104,7 @@ public final class PrometheusExporter {
      *
      * @param event Admin event
      */
-    public void recordAdminEvent(final AdminEvent event) {
+    public void recordGenericAdminEvent(final AdminEvent event) {
         final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
         counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
     }
