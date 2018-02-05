@@ -67,13 +67,13 @@ keycloak_logins{realm="test",provider="github",} 2.0
 ```
 
 ##### keycloak_failed_login_attempts
-This counter counts every login, performed by a standard user, that fails due to a nonexistent user or a wrong password. It also distinguishes logins by the identity provider used by means of the label **provider**.
+This counter counts every login performed by a standard user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider**.
 
 ```c
 # HELP keycloak_failed_login_attempts Total failed login attempts
 # TYPE keycloak_failed_login_attempts gauge
-keycloak_failed_login_attempts{realm="test",provider="keycloak",} 6.0
-keycloak_failed_login_attempts{realm="test",provider="github",} 6.0
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_user_credentials"} 6.0
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found"} 2.0
 ```
 
 ##### keycloak_registrations
