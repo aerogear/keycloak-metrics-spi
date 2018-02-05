@@ -57,7 +57,7 @@ Every single internal Keycloak event is being shared through the endpoint, with 
 There are however a few events that are particularly more useful from a mobile app perspective. These events have been overriden by the SPI and are described more thoroughly below.
 
 ##### keycloak_logins
-This counter counts every login performed by a standard user. It also distinguishes logins by the utilised identity provider by means of the label **provider**.
+This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider**.
 
 ```c
 # HELP keycloak_logins Total successful logins
@@ -67,7 +67,7 @@ keycloak_logins{realm="test",provider="github",} 2.0
 ```
 
 ##### keycloak_failed_login_attempts
-This counter counts every login performed by a standard user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider**.
+This counter counts every login performed by a non-admin user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider**.
 
 ```c
 # HELP keycloak_failed_login_attempts Total failed login attempts
