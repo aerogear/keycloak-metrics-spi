@@ -32,7 +32,7 @@ public final class PrometheusExporter {
     private final static Gauge totalFailedLoginAttempts = Gauge.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
-            .labelNames("realm", "provider")
+            .labelNames("realm", "provider", "error")
             .register();
 
     private final static Gauge totalRegistrations = Gauge.build()
@@ -143,7 +143,7 @@ public final class PrometheusExporter {
         final String provider = event.getDetails()
                 .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
 
-        totalFailedLoginAttempts.labels(event.getRealmId(), provider).inc();
+        totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError()).inc();
     }
 
     /**
