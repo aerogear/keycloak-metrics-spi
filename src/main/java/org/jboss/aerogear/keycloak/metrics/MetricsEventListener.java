@@ -5,12 +5,11 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 
-import java.util.Map;
-
 public class MetricsEventListener implements EventListenerProvider {
 
-    private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
     public final static String ID = "metrics-listener";
+
+    private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
 
     @Override
     public void onEvent(Event event) {
@@ -32,27 +31,24 @@ public class MetricsEventListener implements EventListenerProvider {
         }
     }
 
+    @Override
+    public void onEvent(AdminEvent event, boolean includeRepresentation) {
+        logAdminEventDetails(event);
+
+        PrometheusExporter.instance().recordGenericAdminEvent(event);
+    }
+
     private void logEventDetails(Event event) {
         logger.infof("Received user event of type %s in realm %s",
                 event.getType().name(),
                 event.getRealmId());
-
-        if (event.getDetails() != null) {
-            logger.info("Event details:");
-            for (Map.Entry<String, String> entry : event.getDetails().entrySet()) {
-                logger.infof("<%s> : <%s>", entry.getKey(), entry.getValue());
-            }
-        }
     }
 
-    @Override
-    public void onEvent(AdminEvent event, boolean includeRepresentation) {
+    private void logAdminEventDetails(AdminEvent event) {
         logger.infof("Received admin event of type %s (%s) in realm %s",
                 event.getOperationType().name(),
                 event.getResourceType().name(),
                 event.getRealmId());
-
-        PrometheusExporter.instance().recordAdminEvent(event);
     }
 
     @Override
