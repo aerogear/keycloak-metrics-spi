@@ -23,19 +23,19 @@ public final class PrometheusExporter {
     private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
     private final static Map<String, Counter> counters = new HashMap<>();
 
-    private final static Gauge totalLogins = Gauge.build()
+    private final static Counter totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
             .labelNames("realm", "provider")
             .register();
 
-    private final static Gauge totalFailedLoginAttempts = Gauge.build()
+    private final static Counter totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
             .labelNames("realm", "provider", "error")
             .register();
 
-    private final static Gauge totalRegistrations = Gauge.build()
+    private final static Counter totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
             .labelNames("realm", "provider")
