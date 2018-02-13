@@ -45,7 +45,7 @@ public final class PrometheusExporter {
         // Counters for all user events
         for (EventType type : EventType.values()) {
             if (type.equals(EventType.LOGIN) || type.equals(EventType.LOGIN_ERROR) || type.equals(EventType.REGISTER)) {
-                break;
+                continue;
             }
             final String eventName = USER_EVENT_PREFIX + type.name();
             counters.put(eventName, createCounter(eventName, false));
