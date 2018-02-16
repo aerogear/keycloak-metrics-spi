@@ -2,7 +2,6 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.keycloak.events.Event;
@@ -18,24 +17,29 @@ public final class PrometheusExporter {
 
     private final static String USER_EVENT_PREFIX = "keycloak_user_event_";
     private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
-    private static final String PROVIDER_KEYCLOAK_OPENID = "keycloak";
+    private final static String PROVIDER_KEYCLOAK_OPENID = "keycloak";
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
     private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
-    private final static Map<String, Counter> counters = new HashMap<>();
 
-    private final static Counter totalLogins = Counter.build()
+    // package private by on purpose
+    final static Map<String, Counter> counters = new HashMap<>();
+
+    // package private by on purpose
+    final static Counter totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
             .labelNames("realm", "provider")
             .register();
 
-    private final static Counter totalFailedLoginAttempts = Counter.build()
+    // package private by on purpose
+    final static Counter totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
             .labelNames("realm", "provider", "error")
             .register();
 
-    private final static Counter totalRegistrations = Counter.build()
+    // package private by on purpose
+    final static Counter totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
             .labelNames("realm", "provider")
