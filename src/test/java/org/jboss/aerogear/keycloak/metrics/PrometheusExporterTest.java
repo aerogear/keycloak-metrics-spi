@@ -21,7 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 @SuppressWarnings("unchecked")
 public class PrometheusExporterTest {
 
-    private static final String MYREALM = "myrealm";
+    private static final String DEFAULT_REALM = "myrealm";
 
     @Before
     public void before() {
@@ -82,14 +82,28 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldRecordLoginsPerRealm() throws IOException {
+        // realm 1
+        final Event login1 = createEvent(EventType.LOGIN, DEFAULT_REALM, null, tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordLogin(login1);
+
+        // realm 2
+        final Event login2 = createEvent(EventType.LOGIN, "OTHER_REALM", null, tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordLogin(login2);
+
+        assertMetric("keycloak_logins", 1, DEFAULT_REALM, tuple("provider", "THE_ID_PROVIDER"));
+        assertMetric("keycloak_logins", 1, "OTHER_REALM", tuple("provider", "THE_ID_PROVIDER"));
+    }
+
+    @Test
     public void shouldCorrectlyCountLoginError() throws IOException {
         // with id provider defined
-        final Event event1 = createEvent(EventType.LOGIN_ERROR, "user_not_found", tuple("identity_provider", "THE_ID_PROVIDER"));
+        final Event event1 = createEvent(EventType.LOGIN_ERROR, DEFAULT_REALM, "user_not_found", tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLoginError(event1);
         assertMetric("keycloak_failed_login_attempts", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"));
 
         // without id provider defined
-        final Event event2 = createEvent(EventType.LOGIN_ERROR, "user_not_found");
+        final Event event2 = createEvent(EventType.LOGIN_ERROR, DEFAULT_REALM, "user_not_found");
         PrometheusExporter.instance().recordLoginError(event2);
         assertMetric("keycloak_failed_login_attempts", 1, tuple("provider", "keycloak"), tuple("error", "user_not_found"));
         assertMetric("keycloak_failed_login_attempts", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"));
@@ -129,7 +143,7 @@ public class PrometheusExporterTest {
         final AdminEvent event1 = new AdminEvent();
         event1.setOperationType(OperationType.ACTION);
         event1.setResourceType(ResourceType.AUTHORIZATION_SCOPE);
-        event1.setRealmId(MYREALM);
+        event1.setRealmId(DEFAULT_REALM);
         PrometheusExporter.instance().recordGenericAdminEvent(event1);
         assertMetric("keycloak_admin_event_ACTION", 1, tuple("resource", "AUTHORIZATION_SCOPE"));
         PrometheusExporter.instance().recordGenericAdminEvent(event1);
@@ -139,22 +153,21 @@ public class PrometheusExporterTest {
         final AdminEvent event2 = new AdminEvent();
         event2.setOperationType(OperationType.UPDATE);
         event2.setResourceType(ResourceType.CLIENT);
-        event2.setRealmId(MYREALM);
+        event2.setRealmId(DEFAULT_REALM);
         PrometheusExporter.instance().recordGenericAdminEvent(event2);
         assertMetric("keycloak_admin_event_UPDATE", 1, tuple("resource", "CLIENT"));
         assertMetric("keycloak_admin_event_ACTION", 2, tuple("resource", "AUTHORIZATION_SCOPE"));
     }
 
-    // TODO: realm separation!
-
-    private void assertMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
+    private void assertMetric(String metricName, double metricValue, String realm, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);
             String result = new String(stream.toByteArray());
 
             final StringBuilder builder = new StringBuilder();
 
-            builder.append(metricName).append("{realm=\"myrealm\",");
+            builder.append(metricName).append("{");
+            builder.append("realm").append("=\"").append(realm).append("\",");
 
             for (Tuple<String, String> label : labels) {
                 builder.append(label.left).append("=\"").append(label.right).append("\",");
@@ -166,10 +179,14 @@ public class PrometheusExporterTest {
         }
     }
 
-    private Event createEvent(EventType type, String error, Tuple<String, String>... tuples) {
+    private void assertMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
+        this.assertMetric(metricName, metricValue, DEFAULT_REALM, labels);
+    }
+
+    private Event createEvent(EventType type, String realm, String error, Tuple<String, String>... tuples) {
         final Event event = new Event();
         event.setType(type);
-        event.setRealmId(MYREALM);
+        event.setRealmId(realm);
         if (tuples != null) {
             event.setDetails(new HashMap<>());
             for (Tuple<String, String> tuple : tuples) {
@@ -186,14 +203,14 @@ public class PrometheusExporterTest {
     }
 
     private Event createEvent(EventType type, Tuple<String, String>... tuples) {
-        return this.createEvent(type, null, tuples);
+        return this.createEvent(type, DEFAULT_REALM, null, tuples);
     }
 
     private Event createEvent(EventType type) {
-        return createEvent(type, (String) null);
+        return createEvent(type, DEFAULT_REALM, (String) null);
     }
 
-    static <L, R> Tuple<L, R> tuple(L left, R right) {
+    private static <L, R> Tuple<L, R> tuple(L left, R right) {
         return new Tuple<>(left, right);
     }
 
