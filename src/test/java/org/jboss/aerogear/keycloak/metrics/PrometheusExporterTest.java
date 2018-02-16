@@ -83,16 +83,6 @@ public class PrometheusExporterTest {
         assertLoggedInCount(1, "THE_ID_PROVIDER");
     }
 
-//  @Test
-//  public void shouldCorrectlyCountImpersonate() throws IOException {
-//    final Event imporsonate1 = createEvent(EventType.IMPERSONATE);
-//    PrometheusExporter.instance().recordLogin(imporsonate1);
-//    assertLoggedInCount(1, "keycloak");
-//    final Event imporsonate2 = createEvent(EventType.IMPERSONATE);
-//    PrometheusExporter.instance().recordLogin(imporsonate2);
-//    assertLoggedInCount(2, "keycloak");
-//  }
-
     private void assertLoggedInCount(double number, String provider) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);

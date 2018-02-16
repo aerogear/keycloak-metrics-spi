@@ -17,7 +17,6 @@ public class MetricsEventListener implements EventListenerProvider {
 
         switch (event.getType()) {
             case LOGIN:
-            case IMPERSONATE:
                 PrometheusExporter.instance().recordLogin(event);
                 break;
             case REGISTER:

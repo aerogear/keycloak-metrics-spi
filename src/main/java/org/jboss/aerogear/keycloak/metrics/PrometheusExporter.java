@@ -116,7 +116,7 @@ public final class PrometheusExporter {
     /**
      * Increase the number of currently logged in users
      *
-     * @param event Login or Impersonate event
+     * @param event Login event
      */
     public void recordLogin(final Event event) {
         final String provider = event.getDetails()
