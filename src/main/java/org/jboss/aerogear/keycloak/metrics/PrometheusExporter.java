@@ -1,19 +1,25 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import com.beust.jcommander.internal.Lists;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
+import org.keycloak.events.admin.ResourceType;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class PrometheusExporter {
+
+    private final static Logger logger = Logger.getLogger(PrometheusExporter.class);
 
     private final static String USER_EVENT_PREFIX = "keycloak_user_event_";
     private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
@@ -21,11 +27,11 @@ public final class PrometheusExporter {
 
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
 
-    // these fields are package private by on purpose
-    final Map<String, Counter> counters = new HashMap<>();
-    final Counter totalLogins;
-    final Counter totalFailedLoginAttempts;
-    final Counter totalRegistrations;
+    private final UserEventChain userEventChain = new UserEventChain();
+
+    // package private by on purpose
+    final Map<EventType, Counter> userEventCounters = new HashMap<>();
+    final Map<OperationType, Counter> adminEventCounters = new HashMap<>();
 
     private PrometheusExporter() {
         // The metrics collector needs to be a singleton because requiring a
@@ -35,40 +41,21 @@ public final class PrometheusExporter {
         // anyway and all the Gauges are suggested to be static (it does not really make
         // sense to record the same metric in multiple places)
 
-        // package private by on purpose
-        totalLogins = Counter.build()
-            .name("keycloak_logins")
-            .help("Total successful logins")
-            .labelNames("realm", "provider")
-            .register();
-
-        // package private by on purpose
-        totalFailedLoginAttempts = Counter.build()
-            .name("keycloak_failed_login_attempts")
-            .help("Total failed login attempts")
-            .labelNames("realm", "provider", "error")
-            .register();
-
-        // package private by on purpose
-        totalRegistrations = Counter.build()
-            .name("keycloak_registrations")
-            .help("Total registered users")
-            .labelNames("realm", "provider")
-            .register();
 
         // Counters for all user events
         for (EventType type : EventType.values()) {
-            if (type.equals(EventType.LOGIN) || type.equals(EventType.LOGIN_ERROR) || type.equals(EventType.REGISTER)) {
-                continue;
+            Counter counter = this.userEventChain.createCounter(type);
+            if (counter == null) {
+                final String eventName = USER_EVENT_PREFIX + type.name();
+                counter = doCreateCounter(eventName, false);
             }
-            final String eventName = USER_EVENT_PREFIX + type.name();
-            counters.put(eventName, createCounter(eventName, false));
+            userEventCounters.put(type, counter);
         }
 
         // Counters for all admin events
         for (OperationType type : OperationType.values()) {
-            final String eventName = ADMIN_EVENT_PREFIX + type.name();
-            counters.put(eventName, createCounter(eventName, true));
+            final String operationName = ADMIN_EVENT_PREFIX + type.name();
+            adminEventCounters.put(type, doCreateCounter(operationName, true));
         }
 
         // Initialize the default metrics for the hotspot VM
@@ -79,76 +66,47 @@ public final class PrometheusExporter {
         return INSTANCE;
     }
 
-    /**
-     * Creates a counter based on a event name
-     */
-    private static Counter createCounter(final String name, boolean isAdmin) {
-        final Counter.Builder counter = Counter.build().name(name);
-
-        if (isAdmin) {
-            counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
-        } else {
-            counter.labelNames("realm").help("Generic KeyCloak User event");
+    public void recordEvent(Event event) {
+        final EventType eventType = event.getType();
+        if (eventType == null) {
+            logger.warnf("No eventType given by Keycloak event! Event: %s", event.toString());
+            return;
         }
 
-        return counter.register();
+        final String realmId = event.getRealmId();
+        if (realmId == null || realmId.length() == 0) {
+            logger.warnf("No realmId given by Keycloak event! Event: %s", event.toString());
+            return;
+        }
+
+        boolean handled = userEventChain.handleEvent(event);
+        if (!handled) {
+            // treat as generic
+            userEventCounters.get(eventType).labels(realmId).inc();
+        }
     }
 
-    /**
-     * Count generic user event
-     *
-     * @param event User event
-     */
-    public void recordGenericEvent(final Event event) {
-        final String eventName = USER_EVENT_PREFIX + event.getType().name();
-        counters.get(eventName).labels(event.getRealmId()).inc();
-    }
+    public void recordAdminEvent(AdminEvent event) {
+        final OperationType operationType = event.getOperationType();
+        if (operationType == null) {
+            logger.warnf("No operationType given by Keycloak event! Event: %s", event.toString());
+            return;
+        }
 
-    /**
-     * Count generic admin event
-     *
-     * @param event Admin event
-     */
-    public void recordGenericAdminEvent(final AdminEvent event) {
-        final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
-        counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
-    }
+        final String realmId = event.getRealmId();
+        if (realmId == null || realmId.length() == 0) {
+            logger.warnf("No realmId given by Keycloak event! Event: %s", event.toString());
+            return;
+        }
 
-    /**
-     * Increase the number of currently logged in users
-     *
-     * @param event Login event
-     */
-    public void recordLogin(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+        final ResourceType resourceType = event.getResourceType();
+        if (resourceType == null) {
+            logger.warnf("No resourceType given by Keycloak event! Event: %s", event.toString());
+            return;
+        }
 
-        totalLogins.labels(event.getRealmId(), provider).inc();
-    }
-
-    /**
-     * Increase the number registered users
-     *
-     * @param event Register event
-     */
-    public void recordRegistration(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
-
-        totalRegistrations.labels(event.getRealmId(), provider).inc();
-    }
-
-
-    /**
-     * Increase the number of failed login attempts
-     *
-     * @param event LoginError event
-     */
-    public void recordLoginError(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
-
-        totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError()).inc();
+        // treat as generic
+        adminEventCounters.get(operationType).labels(realmId, resourceType.name()).inc();
     }
 
     /**
@@ -162,6 +120,144 @@ public final class PrometheusExporter {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
         TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
         writer.flush();
+    }
+
+    /**
+     * Creates a counter based on a event name
+     */
+    private static Counter doCreateCounter(final String name, boolean isAdmin) {
+        final Counter.Builder counter = Counter.build().name(name);
+
+        if (isAdmin) {
+            counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
+        } else {
+            counter.labelNames("realm").help("Generic KeyCloak User event");
+        }
+
+        return counter.register();
+    }
+
+    private static class UserEventChain {
+        private List<UserEventHandler> handlers = Lists.newArrayList(
+
+            // LOGIN handler
+            new UserEventHandler() {
+                private Counter counter;
+
+                @Override
+                public boolean handles(EventType eventType) {
+                    return EventType.LOGIN == eventType;
+                }
+
+                @Override
+                public Counter createCounter() {
+                    this.counter = Counter.build()
+                        .name("keycloak_logins")
+                        .help("Total successful logins")
+                        .labelNames("realm", "provider")
+                        .register();
+                    return counter;
+                }
+
+                @Override
+                public void handleEvent(Event event) {
+                    final String provider = event.getDetails()
+                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+                    counter.labels(event.getRealmId(), provider).inc();
+                }
+            },
+
+            // REGISTER handler
+            new UserEventHandler() {
+
+                private Counter counter;
+
+                @Override
+                public boolean handles(EventType eventType) {
+                    return EventType.REGISTER == eventType;
+                }
+
+                @Override
+                public Counter createCounter() {
+                    counter = Counter.build()
+                        .name("keycloak_registrations")
+                        .help("Total registered users")
+                        .labelNames("realm", "provider")
+                        .register();
+
+                    return counter;
+                }
+
+                @Override
+                public void handleEvent(Event event) {
+                    final String provider = event.getDetails()
+                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+                    counter.labels(event.getRealmId(), provider).inc();
+                }
+            },
+
+            // LOGIN_ERROR handler
+            new UserEventHandler() {
+
+                private Counter counter;
+
+                @Override
+                public boolean handles(EventType eventType) {
+                    return EventType.LOGIN_ERROR == eventType;
+                }
+
+                @Override
+                public Counter createCounter() {
+                    counter = Counter.build()
+                        .name("keycloak_failed_login_attempts")
+                        .help("Total failed login attempts")
+                        .labelNames("realm", "provider", "error")
+                        .register();
+
+                    return counter;
+                }
+
+                @Override
+                public void handleEvent(Event event) {
+                    final String provider = event.getDetails()
+                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+
+                    counter.labels(event.getRealmId(), provider, event.getError()).inc();
+                }
+            }
+
+        );
+
+        private Counter createCounter(EventType eventType) {
+            for (UserEventHandler handler : handlers) {
+                if (handler.handles(eventType)) {
+                    return handler.createCounter();
+                }
+            }
+
+            return null;
+        }
+
+        private boolean handleEvent(Event event) {
+            for (UserEventHandler handler : handlers) {
+                if (handler.handles(event.getType())) {
+                    handler.handleEvent(event);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private interface UserEventHandler {
+        boolean handles(EventType eventType);
+
+        Counter createCounter();
+
+        void handleEvent(Event event);
     }
 
 }
