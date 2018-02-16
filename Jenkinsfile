@@ -13,10 +13,6 @@ node('apb-test') {
         checkout scm
     }
 
-    stage('Lint') {
-        sh './gradlew lint'
-    }
-
     stage('Unit tests') {
         sh './gradlew test'
     }
