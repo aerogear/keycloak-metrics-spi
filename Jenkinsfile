@@ -7,7 +7,7 @@ stage('Trust') {
     enforceTrustedApproval('aerogear')
 }
 
-node('apb-test') {
+node('maven') {
 
     stage('Checkout') {
         checkout scm
