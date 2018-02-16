@@ -6,7 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
+import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
+import org.keycloak.events.admin.ResourceType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +20,8 @@ import static org.hamcrest.CoreMatchers.is;
 
 @SuppressWarnings("unchecked")
 public class PrometheusExporterTest {
+
+    private static final String MYREALM = "myrealm";
 
     @Before
     public void before() {
@@ -105,6 +109,44 @@ public class PrometheusExporterTest {
         assertMetric("keycloak_registrations", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
     }
 
+    @Test
+    public void shouldCorrectlyRecordGenericEvents() throws IOException {
+        final Event event1 = createEvent(EventType.UPDATE_EMAIL);
+        PrometheusExporter.instance().recordGenericEvent(event1);
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 1);
+        PrometheusExporter.instance().recordGenericEvent(event1);
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2);
+
+
+        final Event event2 = createEvent(EventType.REVOKE_GRANT);
+        PrometheusExporter.instance().recordGenericEvent(event2);
+        assertMetric("keycloak_user_event_REVOKE_GRANT", 1);
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2);
+    }
+
+    @Test
+    public void shouldCorrectlyRecordGenericAdminEvents() throws IOException {
+        final AdminEvent event1 = new AdminEvent();
+        event1.setOperationType(OperationType.ACTION);
+        event1.setResourceType(ResourceType.AUTHORIZATION_SCOPE);
+        event1.setRealmId(MYREALM);
+        PrometheusExporter.instance().recordGenericAdminEvent(event1);
+        assertMetric("keycloak_admin_event_ACTION", 1, Tuple.of("resource", "AUTHORIZATION_SCOPE"));
+        PrometheusExporter.instance().recordGenericAdminEvent(event1);
+        assertMetric("keycloak_admin_event_ACTION", 2, Tuple.of("resource", "AUTHORIZATION_SCOPE"));
+
+
+        final AdminEvent event2 = new AdminEvent();
+        event2.setOperationType(OperationType.UPDATE);
+        event2.setResourceType(ResourceType.CLIENT);
+        event2.setRealmId(MYREALM);
+        PrometheusExporter.instance().recordGenericAdminEvent(event2);
+        assertMetric("keycloak_admin_event_UPDATE", 1, Tuple.of("resource", "CLIENT"));
+        assertMetric("keycloak_admin_event_ACTION", 2, Tuple.of("resource", "AUTHORIZATION_SCOPE"));
+    }
+
+    // TODO: realm separation!
+
     private void assertMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);
@@ -127,7 +169,7 @@ public class PrometheusExporterTest {
     private Event createEvent(EventType type, String error, Tuple<String, String>... tuples) {
         final Event event = new Event();
         event.setType(type);
-        event.setRealmId("myrealm");
+        event.setRealmId(MYREALM);
         if (tuples != null) {
             event.setDetails(new HashMap<>());
             for (Tuple<String, String> tuple : tuples) {
