@@ -12,11 +12,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
+@SuppressWarnings("unchecked")
 public class PrometheusExporterTest {
 
     @Before
@@ -35,109 +35,133 @@ public class PrometheusExporterTest {
         int adminEvents = OperationType.values().length;
 
         MatcherAssert.assertThat(
-                "All events registered",
-                userEvents + adminEvents - 3,                             // -3 comes from the events that
-                is(PrometheusExporter.instance().counters.size()));       // have their own counters outside the counter map
+            "All events registered",
+            userEvents + adminEvents - 3,                             // -3 comes from the events that
+            is(PrometheusExporter.instance().counters.size()));       // have their own counters outside the counter map
 
     }
 
     @Test
     public void shouldCorrectlyCountLoginWhenIdentityProviderIsDefined() throws IOException {
-        final Map<String, String> details1 = new HashMap<>();
-        details1.put("identity_provider", "THE_ID_PROVIDER");
-        final Event login1 = createEvent(EventType.LOGIN, details1);
+        final Event login1 = createEvent(EventType.LOGIN, Tuple.of("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", "THE_ID_PROVIDER", 1);
+        assertMetric("keycloak_logins", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
 
-        final Map<String, String> details2 = new HashMap<>();
-        details2.put("identity_provider", "THE_ID_PROVIDER");
-        final Event login2 = createEvent(EventType.LOGIN, details2);
+        final Event login2 = createEvent(EventType.LOGIN, Tuple.of("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", "THE_ID_PROVIDER", 2);
+        assertMetric("keycloak_logins", 2, Tuple.of("provider", "THE_ID_PROVIDER"));
     }
 
     @Test
     public void shouldCorrectlyCountLoginWhenIdentityProviderIsNotDefined() throws IOException {
         final Event login1 = createEvent(EventType.LOGIN);
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", "keycloak", 1);
+        assertMetric("keycloak_logins", 1, Tuple.of("provider", "keycloak"));
 
         final Event login2 = createEvent(EventType.LOGIN);
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", "keycloak", 2);
+        assertMetric("keycloak_logins", 2, Tuple.of("provider", "keycloak"));
     }
 
     @Test
     public void shouldCorrectlyCountLogin() throws IOException {
         // with id provider defined
-        final Map<String, String> details1 = new HashMap<>();
-        details1.put("identity_provider", "THE_ID_PROVIDER");
-        final Event login1 = createEvent(EventType.LOGIN, details1);
+        final Event login1 = createEvent(EventType.LOGIN, Tuple.of("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", "THE_ID_PROVIDER", 1);
+        assertMetric("keycloak_logins", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
 
         // without id provider defined
         final Event login2 = createEvent(EventType.LOGIN);
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", "keycloak", 1);
-        assertMetric("keycloak_logins", "THE_ID_PROVIDER", 1);
+        assertMetric("keycloak_logins", 1, Tuple.of("provider", "keycloak"));
+        assertMetric("keycloak_logins", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
     }
 
-//    @Test
-//    public void shouldCorrectlyCountLoginError() throws IOException {
-//        // with id provider defined
-//        final Map<String, String> details1 = new HashMap<>();
-//        details1.put("identity_provider", "THE_ID_PROVIDER");
-//        final Event event1 = createEvent(EventType.LOGIN_ERROR, details1);
-//        event1.setError("user_not_found");
-//        PrometheusExporter.instance().recordLoginError(event1);
-//        assertMetric("keycloak_failed_login_attempts", "THE_ID_PROVIDER", 1);
-//
-//        // without id provider defined
-//        final Event event2 = createEvent(EventType.LOGIN_ERROR);
-//        PrometheusExporter.instance().recordLoginError(event2);
-//        event2.setError("user_not_found");
-//        assertMetric("keycloak_failed_login_attempts", "keycloak", 1);
-//        assertMetric("keycloak_failed_login_attempts", "THE_ID_PROVIDER", 1);
-//    }
+    @Test
+    public void shouldCorrectlyCountLoginError() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.LOGIN_ERROR, "user_not_found", Tuple.of("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordLoginError(event1);
+        assertMetric("keycloak_failed_login_attempts", 1, Tuple.of("provider", "THE_ID_PROVIDER"), Tuple.of("error", "user_not_found"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.LOGIN_ERROR, "user_not_found");
+        PrometheusExporter.instance().recordLoginError(event2);
+        assertMetric("keycloak_failed_login_attempts", 1, Tuple.of("provider", "keycloak"), Tuple.of("error", "user_not_found"));
+        assertMetric("keycloak_failed_login_attempts", 1, Tuple.of("provider", "THE_ID_PROVIDER"), Tuple.of("error", "user_not_found"));
+    }
 
     @Test
     public void shouldCorrectlyCountRegister() throws IOException {
         // with id provider defined
-        final Map<String, String> details1 = new HashMap<>();
-        details1.put("identity_provider", "THE_ID_PROVIDER");
-        final Event event1 = createEvent(EventType.REGISTER, details1);
+        final Event event1 = createEvent(EventType.REGISTER, Tuple.of("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordRegistration(event1);
-        assertMetric("keycloak_registrations", "THE_ID_PROVIDER", 1);
+        assertMetric("keycloak_registrations", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
 
         // without id provider defined
         final Event event2 = createEvent(EventType.REGISTER);
         PrometheusExporter.instance().recordRegistration(event2);
-        assertMetric("keycloak_registrations", "keycloak", 1);
-        assertMetric("keycloak_registrations", "THE_ID_PROVIDER", 1);
+        assertMetric("keycloak_registrations", 1, Tuple.of("provider", "keycloak"));
+        assertMetric("keycloak_registrations", 1, Tuple.of("provider", "THE_ID_PROVIDER"));
     }
 
-    private void assertMetric(String metricName, String provider, double metricValue) throws IOException {
+    private void assertMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);
             String result = new String(stream.toByteArray());
-            MatcherAssert.assertThat(result, containsString(metricName + "{realm=\"myrealm\",provider=\"" + provider + "\",} " + metricValue));
+
+            final StringBuilder builder = new StringBuilder();
+
+            builder.append(metricName).append("{realm=\"myrealm\",");
+
+            for (Tuple<String, String> label : labels) {
+                builder.append(label.left).append("=\"").append(label.right).append("\",");
+            }
+
+            builder.append("} ").append(metricValue);
+
+            MatcherAssert.assertThat(result, containsString(builder.toString()));
         }
     }
 
-    private Event createEvent(EventType type, Map<String, String> details) {
+    private Event createEvent(EventType type, String error, Tuple<String, String>... tuples) {
         final Event event = new Event();
         event.setType(type);
         event.setRealmId("myrealm");
-        if (details != null) {
-            event.setDetails(details);
+        if (tuples != null) {
+            event.setDetails(new HashMap<>());
+            for (Tuple<String, String> tuple : tuples) {
+                event.getDetails().put(tuple.left, tuple.right);
+            }
         } else {
             event.setDetails(Collections.emptyMap());
+        }
+
+        if (error != null) {
+            event.setError(error);
         }
         return event;
     }
 
+    private Event createEvent(EventType type, Tuple<String, String>... tuples) {
+        return this.createEvent(type, null, tuples);
+    }
+
     private Event createEvent(EventType type) {
-        return createEvent(type, null);
+        return createEvent(type, (String) null);
+    }
+
+    private static final class Tuple<L, R> {
+        final L left;
+        final R right;
+
+        private Tuple(L left, R right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        static <L, R> Tuple<L, R> of(L left, R right) {
+            return new Tuple<>(left, right);
+        }
     }
 }
