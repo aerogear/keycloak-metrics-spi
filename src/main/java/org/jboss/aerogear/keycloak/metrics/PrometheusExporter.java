@@ -18,34 +18,50 @@ public final class PrometheusExporter {
     private final static String USER_EVENT_PREFIX = "keycloak_user_event_";
     private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
     private final static String PROVIDER_KEYCLOAK_OPENID = "keycloak";
+
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
-    private final static CollectorRegistry registry = CollectorRegistry.defaultRegistry;
 
     // package private by on purpose
-    final static Map<String, Counter> counters = new HashMap<>();
+    final Map<String, Counter> counters = new HashMap<>();
 
     // package private by on purpose
-    final static Counter totalLogins = Counter.build()
+    final Counter totalLogins;
+
+    // package private by on purpose
+    final Counter totalFailedLoginAttempts;
+
+    // package private by on purpose
+    final Counter totalRegistrations;
+
+    private PrometheusExporter() {
+        // The metrics collector needs to be a singleton because requiring a
+        // provider from the KeyCloak session (session#getProvider) will always
+        // create a new instance. Not sure if this is a bug in the SPI implementation
+        // or intentional but better to avoid this. The metrics object is single-instance
+        // anyway and all the Gauges are suggested to be static (it does not really make
+        // sense to record the same metric in multiple places)
+
+        // package private by on purpose
+        totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
             .labelNames("realm", "provider")
             .register();
 
-    // package private by on purpose
-    final static Counter totalFailedLoginAttempts = Counter.build()
+        // package private by on purpose
+        totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
             .labelNames("realm", "provider", "error")
             .register();
 
-    // package private by on purpose
-    final static Counter totalRegistrations = Counter.build()
+        // package private by on purpose
+        totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
             .labelNames("realm", "provider")
             .register();
 
-    static {
         // Counters for all user events
         for (EventType type : EventType.values()) {
             if (type.equals(EventType.LOGIN) || type.equals(EventType.LOGIN_ERROR) || type.equals(EventType.REGISTER)) {
@@ -60,15 +76,6 @@ public final class PrometheusExporter {
             final String eventName = ADMIN_EVENT_PREFIX + type.name();
             counters.put(eventName, createCounter(eventName, true));
         }
-    }
-
-    private PrometheusExporter() {
-        // The metrics collector needs to be a singleton because requiring a
-        // provider from the KeyCloak session (session#getProvider) will always
-        // create a new instance. Not sure if this is a bug in the SPI implementation
-        // or intentional but better to avoid this. The metrics object is single-instance
-        // anyway and all the Gauges are suggested to be static (it does not really make
-        // sense to record the same metric in multiple places)
 
         // Initialize the default metrics for the hotspot VM
         DefaultExports.initialize();
@@ -159,7 +166,7 @@ public final class PrometheusExporter {
      */
     public void export(final OutputStream stream) throws IOException {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
-        TextFormat.write004(writer, registry.metricFamilySamples());
+        TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
         writer.flush();
     }
 
