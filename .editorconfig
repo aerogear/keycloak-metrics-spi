@@ -1,0 +1,16 @@
+# File for usage with http://editorconfig.org/ editor plugins
+# For more details on code style and editor-specific configuration files, see https://github.com/aerogear/ide-config
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+# The following property is not yet available via EditorConfig, but part of our style guideline
+# see https://github.com/editorconfig/editorconfig/wiki/Property-research:-maximum-line-length
+# max_line_length: 128
+
+[*.{java,gradle}]
+trim_trailing_whitespace = true

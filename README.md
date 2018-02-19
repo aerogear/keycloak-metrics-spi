@@ -28,7 +28,7 @@ builds the jar and writes it to _build/libs_.
 
 ## Usage
 
-Just drop the jar into the _providers_ subdirectory of your KeyCloak installation. To enbale the event listener go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
+Just drop the jar into the _providers_ subdirectory of your KeyCloak installation. To enable the event listener go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
 
 ## Metrics
 
