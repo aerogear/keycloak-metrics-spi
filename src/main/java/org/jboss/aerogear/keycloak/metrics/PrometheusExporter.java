@@ -1,6 +1,5 @@
 package org.jboss.aerogear.keycloak.metrics;
 
-import com.beust.jcommander.internal.Lists;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -13,6 +12,7 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,97 +138,102 @@ public final class PrometheusExporter {
     }
 
     private static class UserEventChain {
-        private List<UserEventHandler> handlers = Lists.newArrayList(
+        private List<UserEventHandler> handlers;
+
+        UserEventChain() {
+            this.handlers = new ArrayList<>();
 
             // LOGIN handler
-            new UserEventHandler() {
-                private Counter counter;
+            this.handlers.add(
+                new UserEventHandler() {
+                    private Counter counter;
 
-                @Override
-                public boolean handles(EventType eventType) {
-                    return EventType.LOGIN == eventType;
-                }
+                    @Override
+                    public boolean handles(EventType eventType) {
+                        return EventType.LOGIN == eventType;
+                    }
 
-                @Override
-                public Counter createCounter() {
-                    this.counter = Counter.build()
-                        .name("keycloak_logins")
-                        .help("Total successful logins")
-                        .labelNames("realm", "provider")
-                        .register();
-                    return counter;
-                }
+                    @Override
+                    public Counter createCounter() {
+                        this.counter = Counter.build()
+                            .name("keycloak_logins")
+                            .help("Total successful logins")
+                            .labelNames("realm", "provider")
+                            .register();
+                        return counter;
+                    }
 
-                @Override
-                public void handleEvent(Event event) {
-                    final String provider = event.getDetails()
-                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+                    @Override
+                    public void handleEvent(Event event) {
+                        final String provider = event.getDetails()
+                            .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
 
-                    counter.labels(event.getRealmId(), provider).inc();
-                }
-            },
+                        counter.labels(event.getRealmId(), provider).inc();
+                    }
+                });
 
             // REGISTER handler
-            new UserEventHandler() {
+            this.handlers.add(
+                new UserEventHandler() {
 
-                private Counter counter;
+                    private Counter counter;
 
-                @Override
-                public boolean handles(EventType eventType) {
-                    return EventType.REGISTER == eventType;
-                }
+                    @Override
+                    public boolean handles(EventType eventType) {
+                        return EventType.REGISTER == eventType;
+                    }
 
-                @Override
-                public Counter createCounter() {
-                    counter = Counter.build()
-                        .name("keycloak_registrations")
-                        .help("Total registered users")
-                        .labelNames("realm", "provider")
-                        .register();
+                    @Override
+                    public Counter createCounter() {
+                        counter = Counter.build()
+                            .name("keycloak_registrations")
+                            .help("Total registered users")
+                            .labelNames("realm", "provider")
+                            .register();
 
-                    return counter;
-                }
+                        return counter;
+                    }
 
-                @Override
-                public void handleEvent(Event event) {
-                    final String provider = event.getDetails()
-                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+                    @Override
+                    public void handleEvent(Event event) {
+                        final String provider = event.getDetails()
+                            .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
 
-                    counter.labels(event.getRealmId(), provider).inc();
-                }
-            },
+                        counter.labels(event.getRealmId(), provider).inc();
+                    }
+                });
 
             // LOGIN_ERROR handler
-            new UserEventHandler() {
+            this.handlers.add(
+                new UserEventHandler() {
 
-                private Counter counter;
+                    private Counter counter;
 
-                @Override
-                public boolean handles(EventType eventType) {
-                    return EventType.LOGIN_ERROR == eventType;
-                }
+                    @Override
+                    public boolean handles(EventType eventType) {
+                        return EventType.LOGIN_ERROR == eventType;
+                    }
 
-                @Override
-                public Counter createCounter() {
-                    counter = Counter.build()
-                        .name("keycloak_failed_login_attempts")
-                        .help("Total failed login attempts")
-                        .labelNames("realm", "provider", "error")
-                        .register();
+                    @Override
+                    public Counter createCounter() {
+                        counter = Counter.build()
+                            .name("keycloak_failed_login_attempts")
+                            .help("Total failed login attempts")
+                            .labelNames("realm", "provider", "error")
+                            .register();
 
-                    return counter;
-                }
+                        return counter;
+                    }
 
-                @Override
-                public void handleEvent(Event event) {
-                    final String provider = event.getDetails()
-                        .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+                    @Override
+                    public void handleEvent(Event event) {
+                        final String provider = event.getDetails()
+                            .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
 
-                    counter.labels(event.getRealmId(), provider, event.getError()).inc();
-                }
-            }
-
-        );
+                        counter.labels(event.getRealmId(), provider, event.getError()).inc();
+                    }
+                });
+        }
 
         private Counter createCounter(EventType eventType) {
             for (UserEventHandler handler : handlers) {
