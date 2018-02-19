@@ -21,16 +21,10 @@ public final class PrometheusExporter {
 
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
 
-    // package private by on purpose
+    // these fields are package private by on purpose
     final Map<String, Counter> counters = new HashMap<>();
-
-    // package private by on purpose
     final Counter totalLogins;
-
-    // package private by on purpose
     final Counter totalFailedLoginAttempts;
-
-    // package private by on purpose
     final Counter totalRegistrations;
 
     private PrometheusExporter() {

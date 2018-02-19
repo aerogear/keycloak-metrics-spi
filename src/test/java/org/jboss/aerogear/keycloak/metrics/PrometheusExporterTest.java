@@ -68,7 +68,7 @@ public class PrometheusExporterTest {
     }
 
     @Test
-    public void shouldCorrectlyCountLogin() throws IOException {
+    public void shouldCorrectlyCountLoginsFromDifferentProviders() throws IOException {
         // with id provider defined
         final Event login1 = createEvent(EventType.LOGIN, tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);
