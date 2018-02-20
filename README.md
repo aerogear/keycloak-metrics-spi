@@ -30,6 +30,14 @@ builds the jar and writes it to _build/libs_.
 
 Just drop the jar into the _providers_ subdirectory of your KeyCloak installation. To enable the event listener go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
 
+In case of OpenShift, you can copy the JAR with this command:
+
+```
+oc cp ./build/libs/keycloak-metrics-spi-1.0-SNAPSHOT.jar <keycloak-pod-name>:/opt/jboss/keycloak/providers/
+```
+
+and then delete the Keycloak Pod, so that deployment config recreates it;
+
 ## Metrics
 
 For each metric, the endpoint returns 2 or more lines of information:

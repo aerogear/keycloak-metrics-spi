@@ -14,40 +14,26 @@ public class MetricsEventListener implements EventListenerProvider {
     @Override
     public void onEvent(Event event) {
         logEventDetails(event);
-
-        switch (event.getType()) {
-            case LOGIN:
-                PrometheusExporter.instance().recordLogin(event);
-                break;
-            case REGISTER:
-                PrometheusExporter.instance().recordRegistration(event);
-                break;
-            case LOGIN_ERROR:
-                PrometheusExporter.instance().recordLoginError(event);
-                break;
-            default:
-                PrometheusExporter.instance().recordGenericEvent(event);
-        }
+        PrometheusExporter.instance().recordEvent(event);
     }
 
     @Override
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
         logAdminEventDetails(event);
-
-        PrometheusExporter.instance().recordGenericAdminEvent(event);
+        PrometheusExporter.instance().recordAdminEvent(event);
     }
 
     private void logEventDetails(Event event) {
         logger.infof("Received user event of type %s in realm %s",
-                event.getType().name(),
-                event.getRealmId());
+            (event.getType() == null ? "null" : event.getType().name()),
+            event.getRealmId());
     }
 
     private void logAdminEventDetails(AdminEvent event) {
         logger.infof("Received admin event of type %s (%s) in realm %s",
-                event.getOperationType().name(),
-                event.getResourceType().name(),
-                event.getRealmId());
+            (event.getOperationType() == null ? "null" : event.getOperationType().name()),
+            (event.getResourceType() == null ? "null" : event.getResourceType().name()),
+            event.getRealmId());
     }
 
     @Override
