@@ -6,40 +6,52 @@ import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 
 public class MetricsEventListener implements EventListenerProvider {
-  private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
-  public final static String ID = "metrics-listener";
 
-  @Override
-  public void onEvent(Event event) {
-    logger.infof("Received user event of type %s in realm %s",
-      event.getType().name(),
-      event.getRealmId());
+    public final static String ID = "metrics-listener";
 
-    PrometheusExporter.instance().recordUserEvent(event);
+    private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
 
-    switch (event.getType()) {
-      case LOGIN:
-      case IMPERSONATE:
-        PrometheusExporter.instance().recordUserLogin(event);
-        break;
-      case LOGOUT:
-        PrometheusExporter.instance().recordUserLogout(event);
-        break;
+    @Override
+    public void onEvent(Event event) {
+        logEventDetails(event);
+
+        switch (event.getType()) {
+            case LOGIN:
+                PrometheusExporter.instance().recordLogin(event);
+                break;
+            case REGISTER:
+                PrometheusExporter.instance().recordRegistration(event);
+                break;
+            case LOGIN_ERROR:
+                PrometheusExporter.instance().recordLoginError(event);
+                break;
+            default:
+                PrometheusExporter.instance().recordGenericEvent(event);
+        }
     }
-  }
 
-  @Override
-  public void onEvent(AdminEvent event, boolean includeRepresentation) {
-    logger.infof("Received admin event of type %s (%s) in realm %s",
-      event.getOperationType().name(),
-      event.getResourceType().name(),
-      event.getRealmId());
+    @Override
+    public void onEvent(AdminEvent event, boolean includeRepresentation) {
+        logAdminEventDetails(event);
 
-    PrometheusExporter.instance().recordAdminEvent(event);
-  }
+        PrometheusExporter.instance().recordGenericAdminEvent(event);
+    }
 
-  @Override
-  public void close() {
-    // unused
-  }
+    private void logEventDetails(Event event) {
+        logger.infof("Received user event of type %s in realm %s",
+                event.getType().name(),
+                event.getRealmId());
+    }
+
+    private void logAdminEventDetails(AdminEvent event) {
+        logger.infof("Received admin event of type %s (%s) in realm %s",
+                event.getOperationType().name(),
+                event.getResourceType().name(),
+                event.getRealmId());
+    }
+
+    @Override
+    public void close() {
+        // unused
+    }
 }
