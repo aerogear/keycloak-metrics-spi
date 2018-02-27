@@ -22,8 +22,8 @@ dependencies {
     compile group: 'org.keycloak', name: 'keycloak-server-spi', version: '3.2.1.Final'
     compile group: 'org.keycloak', name: 'keycloak-services', version: '3.2.1.Final'
     compile group: 'org.jboss.spec.javax.ws.rs', name: 'jboss-jaxrs-api_2.0_spec', version: '1.0.0.Final'
-    bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: '0.2.0'
-    bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.2.0'
+    bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: '0.3.0'
+    bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.3.0'
     configurations.compile.extendsFrom(configurations.bundleLib)
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
