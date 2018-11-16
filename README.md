@@ -12,6 +12,10 @@ Two distinct providers are defined:
 The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
 you use in the URL (you can just default to `/auth/realms/master/metrics`).
 
+## License 
+
+ See [LICENSE file](./LICENSE)
+
 ## Running the tests
 
 ```sh
