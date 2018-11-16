@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/:license-Apache2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 # KeyCloak Metrics SPI
 
 A [Service Provider](http://www.keycloak.org/docs/3.0/server_development/topics/providers.html) that adds a metrics endpoint to KeyCloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
