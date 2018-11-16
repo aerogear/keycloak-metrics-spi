@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/:license-Apache2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 # KeyCloak Metrics SPI
 
 A [Service Provider](http://www.keycloak.org/docs/3.0/server_development/topics/providers.html) that adds a metrics endpoint to KeyCloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
@@ -9,6 +11,10 @@ Two distinct providers are defined:
 
 The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
 you use in the URL (you can just default to `/auth/realms/master/metrics`).
+
+## License 
+
+ See [LICENSE file](./LICENSE)
 
 ## Running the tests
 
