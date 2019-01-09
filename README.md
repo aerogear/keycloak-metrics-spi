@@ -40,9 +40,9 @@ To enable the event listener via the GUI interface, go to _Manage -> Events -> C
 
 To enable the event listener via the KeyCloak CLI, such as when building a Docker container, use these commands. (These commands assume /opt/jboss is the KeyCloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.)
 
-  /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user _username_ --password _password_
-  /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
-  /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+    /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user _username_ --password _password_
+    /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
+    /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
 
 ## Metrics
 
