@@ -24,7 +24,7 @@ $ ./gradlew test
 
 ## Build
 
-The project is packages as a jar file and bundles the prometheus client libraries.
+The project is packaged as a jar file and bundles the prometheus client libraries.
 
 ```sh
 $ ./gradlew jar
