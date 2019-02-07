@@ -120,8 +120,7 @@ public final class PrometheusExporter {
      * @param event Login event
      */
     public void recordLogin(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+        final String provider = getIdentityProvider(event);
 
         totalLogins.labels(event.getRealmId(), provider).inc();
     }
@@ -132,8 +131,7 @@ public final class PrometheusExporter {
      * @param event Register event
      */
     public void recordRegistration(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+        final String provider = getIdentityProvider(event);
 
         totalRegistrations.labels(event.getRealmId(), provider).inc();
     }
@@ -145,10 +143,27 @@ public final class PrometheusExporter {
      * @param event LoginError event
      */
     public void recordLoginError(final Event event) {
-        final String provider = event.getDetails()
-                .getOrDefault("identity_provider", PROVIDER_KEYCLOAK_OPENID);
+        final String provider = getIdentityProvider(event);
 
         totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError()).inc();
+    }
+
+    /**
+     * Retrieve the identity prodiver name from event details or
+     * default to {@value #PROVIDER_KEYCLOAK_OPENID}.
+     *
+     * @param event User event
+     * @return      Identity provider name
+     */
+    private String getIdentityProvider(Event event) {
+        String identityProvider = null;
+        if (event.getDetails() != null) {
+            identityProvider = event.getDetails().get("identity_provider");
+        }
+        if (identityProvider == null) {
+            identityProvider = PROVIDER_KEYCLOAK_OPENID;
+        }
+        return identityProvider;
     }
 
     /**
