@@ -4,6 +4,7 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -20,6 +21,8 @@ public final class PrometheusExporter {
     private final static String PROVIDER_KEYCLOAK_OPENID = "keycloak";
 
     private final static PrometheusExporter INSTANCE = new PrometheusExporter();
+
+    private final static Logger logger = Logger.getLogger(PrometheusExporter.class);
 
     // these fields are package private by on purpose
     final Map<String, Counter> counters = new HashMap<>();
@@ -61,14 +64,14 @@ public final class PrometheusExporter {
             if (type.equals(EventType.LOGIN) || type.equals(EventType.LOGIN_ERROR) || type.equals(EventType.REGISTER)) {
                 continue;
             }
-            final String eventName = USER_EVENT_PREFIX + type.name();
-            counters.put(eventName, createCounter(eventName, false));
+            final String counterName = buildCounterName(type);
+            counters.put(counterName, createCounter(counterName, false));
         }
 
         // Counters for all admin events
         for (OperationType type : OperationType.values()) {
-            final String eventName = ADMIN_EVENT_PREFIX + type.name();
-            counters.put(eventName, createCounter(eventName, true));
+            final String counterName = buildCounterName(type);
+            counters.put(counterName, createCounter(counterName, true));
         }
 
         // Initialize the default metrics for the hotspot VM
@@ -100,8 +103,12 @@ public final class PrometheusExporter {
      * @param event User event
      */
     public void recordGenericEvent(final Event event) {
-        final String eventName = USER_EVENT_PREFIX + event.getType().name();
-        counters.get(eventName).labels(event.getRealmId()).inc();
+        final String counterName = buildCounterName(event.getType());
+        if (counters.get(counterName) == null) {
+            logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), event.getRealmId());
+            return;
+        }
+        counters.get(counterName).labels(event.getRealmId()).inc();
     }
 
     /**
@@ -110,8 +117,12 @@ public final class PrometheusExporter {
      * @param event Admin event
      */
     public void recordGenericAdminEvent(final AdminEvent event) {
-        final String eventName = ADMIN_EVENT_PREFIX + event.getOperationType().name();
-        counters.get(eventName).labels(event.getRealmId(), event.getResourceType().name()).inc();
+        final String counterName = buildCounterName(event.getOperationType());
+        if (counters.get(counterName) == null) {
+            logger.warnf("Counter for admin event operation type %s does not exist. Resource type: %s, realm: %s", event.getOperationType().name(), event.getResourceType().name(), event.getRealmId());
+            return;
+        }
+        counters.get(counterName).labels(event.getRealmId(), event.getResourceType().name()).inc();
     }
 
     /**
@@ -153,7 +164,7 @@ public final class PrometheusExporter {
      * default to {@value #PROVIDER_KEYCLOAK_OPENID}.
      *
      * @param event User event
-     * @return      Identity provider name
+     * @return Identity provider name
      */
     private String getIdentityProvider(Event event) {
         String identityProvider = null;
@@ -177,6 +188,14 @@ public final class PrometheusExporter {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
         TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
         writer.flush();
+    }
+
+    private String buildCounterName(OperationType type) {
+        return ADMIN_EVENT_PREFIX + type.name();
+    }
+
+    private String buildCounterName(EventType type) {
+        return USER_EVENT_PREFIX + type.name();
     }
 
 }
