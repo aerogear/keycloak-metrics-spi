@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id "net.nemerosa.versioning" version "2.8.2"
 }
@@ -21,13 +23,19 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    keycloakVersion=project.properties["keycloakVersion"]
+    prometheusVersion=project.properties["prometheusVersion"]
+}
+
+
 dependencies {
-    compile group: 'org.keycloak', name: 'keycloak-server-spi-private', version: '3.2.1.Final'
-    compile group: 'org.keycloak', name: 'keycloak-server-spi', version: '3.2.1.Final'
-    compile group: 'org.keycloak', name: 'keycloak-services', version: '3.2.1.Final'
+    compile group: 'org.keycloak', name: 'keycloak-server-spi-private', version: keycloakVersion
+    compile group: 'org.keycloak', name: 'keycloak-server-spi', version: keycloakVersion
+    compile group: 'org.keycloak', name: 'keycloak-services', version: keycloakVersion
     compile group: 'org.jboss.spec.javax.ws.rs', name: 'jboss-jaxrs-api_2.0_spec', version: '1.0.0.Final'
-    bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: '0.3.0'
-    bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.3.0'
+    bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: prometheusVersion
+    bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: prometheusVersion
     configurations.compile.extendsFrom(configurations.bundleLib)
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -40,7 +48,7 @@ jar {
     manifest {
         attributes(
             'Built-By'       : System.properties['user.name'],
-            'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+            'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
             'Build-Revision' : versioning.info.commit,
             'Created-By'     : "Gradle ${gradle.gradleVersion}",
             'Build-Jdk'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
