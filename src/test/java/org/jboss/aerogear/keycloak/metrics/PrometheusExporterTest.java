@@ -159,6 +159,37 @@ public class PrometheusExporterTest {
         assertMetric("keycloak_admin_event_ACTION", 2, tuple("resource", "AUTHORIZATION_SCOPE"));
     }
 
+    @Test
+    public void shouldCorrectlyRecordResponseDurations() throws IOException {
+        PrometheusExporter.instance().recordRequestDuration(5, "GET", "/");
+        assertGenericMetric("keycloak_request_duration_count", 1, tuple("method", "GET"), tuple("route", "/"));
+        assertGenericMetric("keycloak_request_duration_sum", 5, tuple("method", "GET"), tuple("route", "/"));
+    }
+
+    @Test
+    public void shouldCorrectlyRecordResponseErrors() throws IOException {
+        PrometheusExporter.instance().recordResponseError(500, "POST", "/");
+        assertGenericMetric("keycloak_response_errors", 1, tuple("code", "500"), tuple("method", "POST"), tuple("route", "/"));
+    }
+
+    private void assertGenericMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            PrometheusExporter.instance().export(stream);
+            String result = new String(stream.toByteArray());
+
+            final StringBuilder builder = new StringBuilder();
+            builder.append(metricName).append("{");
+
+            for (Tuple<String, String> label : labels) {
+                builder.append(label.left).append("=\"").append(label.right).append("\",");
+            }
+
+            builder.append("} ").append(metricValue);
+
+            MatcherAssert.assertThat(result, containsString(builder.toString()));
+        }
+    }
+
     private void assertMetric(String metricName, double metricValue, String realm, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);
