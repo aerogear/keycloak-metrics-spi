@@ -109,3 +109,45 @@ This counter counts every new user registration. It also distinguishes registrat
 keycloak_registrations{realm="test",provider="keycloak",} 1.0
 keycloak_registrations{realm="test",provider="github",} 1.0
 ```
+
+##### keycloak_request_duration
+This histogram records the response times per route and http method and puts them in one of five buckets:
+
+* Requests that take 2ms or less
+* Requests that take 10ms or less
+* Requests that take 100ms or less
+* Requests that take 1s or less
+* Any request that takes longer than 1s
+
+The response from this type of metrics has the following format:
+
+```c
+# HELP keycloak_request_duration Request duration
+# TYPE keycloak_request_duration histogram
+keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="2.0",} 0.0
+keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="10.0",} 1.0
+keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="100.0",} 2.0
+keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="1000.0",} 2.0
+keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="+Inf",} 2.0
+keycloak_request_duration_count{method="PUT",route="/admin/realms/openshift/clients/3scale",} 2.0
+keycloak_request_duration_sum{method="PUT",route="/admin/realms/openshift/clients/3scale",} 83.0
+```
+
+This tells you that there have been zero requests that took less than 2ms. There was one request that took less than 10ms. All the other requests took less than 100ms.
+
+Aside from the buckets there are also the `sum` and `count` metrics for every route and method. In the above example they tell you that there have been two requests total for this route & http method. The sum of all response times for this combination is 83ms.
+
+To get the average request duration over the last five minutes for the whole server you can use the following Prometheus query:
+
+```c
+rate(keycloak_request_duration_sum[5m]) / rate(keycloak_request_duration_count[5m])
+```
+
+##### keycloak_response_errors
+This counter counts the number of response errors (responses where the http status code is in the 400 or 500 range).
+
+```c
+# HELP keycloak_response_errors Total number of error responses
+# TYPE keycloak_response_errors counter
+keycloak_response_errors{code="500",method="GET",route="/",} 1
+```
