@@ -2,6 +2,7 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.jboss.logging.Logger;
@@ -24,11 +25,13 @@ public final class PrometheusExporter {
 
     private final static Logger logger = Logger.getLogger(PrometheusExporter.class);
 
-    // these fields are package private by on purpose
+    // these fields are package private on purpose
     final Map<String, Counter> counters = new HashMap<>();
     final Counter totalLogins;
     final Counter totalFailedLoginAttempts;
     final Counter totalRegistrations;
+    final Counter responseErrors;
+    final Histogram requestDuration;
 
     private PrometheusExporter() {
         // The metrics collector needs to be a singleton because requiring a
@@ -38,25 +41,38 @@ public final class PrometheusExporter {
         // anyway and all the Gauges are suggested to be static (it does not really make
         // sense to record the same metric in multiple places)
 
-        // package private by on purpose
+        // package private on purpose
         totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
             .labelNames("realm", "provider")
             .register();
 
-        // package private by on purpose
+        // package private on purpose
         totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
             .labelNames("realm", "provider", "error")
             .register();
 
-        // package private by on purpose
+        // package private on purpose
         totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
             .labelNames("realm", "provider")
+            .register();
+
+        responseErrors = Counter.build()
+            .name("keycloak_response_errors")
+            .help("Total number of error responses")
+            .labelNames("code", "method", "route")
+            .register();
+
+        requestDuration = Histogram.build()
+            .name("keycloak_request_duration")
+            .help("Request duration")
+            .buckets(2, 10, 100, 1000)
+            .labelNames("method", "route")
             .register();
 
         // Counters for all user events
@@ -157,6 +173,28 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError()).inc();
+    }
+
+    /**
+     * Record the duration between one request and response
+     *
+     * @param amt The duration in milliseconds
+     * @param method HTTP method of the request
+     * @param route Request route / path
+     */
+    public void recordRequestDuration(double amt, String method, String route) {
+        requestDuration.labels(method, route).observe(amt);
+    }
+
+    /**
+     * Increase the response error count by a given method and route
+     *
+     * @param code The returned http status code
+     * @param method The request method used
+     * @param route The request route / path
+     */
+    public void recordResponseError(int code, String method, String route) {
+        responseErrors.labels(Integer.toString(code), method, route).inc();
     }
 
     /**
