@@ -1,12 +1,12 @@
 [![License](https://img.shields.io/:license-Apache2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-# KeyCloak Metrics SPI
+# Keycloak Metrics SPI
 
-A [Service Provider](http://www.keycloak.org/docs/3.0/server_development/topics/providers.html) that adds a metrics endpoint to KeyCloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
+A [Service Provider](http://www.keycloak.org/docs/3.0/server_development/topics/providers.html) that adds a metrics endpoint to Keycloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
 
 Two distinct providers are defined:
 
-* MetricsEventListener to record the internal KeyCloak events
+* MetricsEventListener to record the internal Keycloak events
 * MetricsEndpoint to expose the data through a custom endpoint
 
 The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
@@ -44,11 +44,11 @@ or by changing the `gradle.properties` file in the root of the project.
 
 ## Usage
 
-Just drop the jar into the _providers_ subdirectory of your KeyCloak installation.
+Just drop the jar into the _providers_ subdirectory of your Keycloak installation.
 
 To enable the event listener via the GUI interface, go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
 
-To enable the event listener via the KeyCloak CLI, such as when building a Docker container, use these commands. (These commands assume /opt/jboss is the KeyCloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.)
+To enable the event listener via the Keycloak CLI, such as when building a Docker container, use these commands. (These commands assume /opt/jboss is the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.)
 
     /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
     /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
@@ -75,7 +75,7 @@ jvm_memory_bytes_committed{area="nonheap",} 2.0217856E8
 A variety of JVM metrics are provided
 
 ### Generic events
-Every single internal Keycloak event is being shared through the endpoint, with the descriptions `Generic KeyCloak User event` or `Generic KeyCloak Admin event`. Most of these events are not likely useful for the majority users but are provided for good measure. A complete list of the events can be found at [Keycloak documentation](http://www.keycloak.org/docs-api/3.2/javadocs/org/keycloak/events/EventType.html).
+Every single internal Keycloak event is being shared through the endpoint, with the descriptions `Generic Keycloak User event` or `Generic Keycloak Admin event`. Most of these events are not likely useful for the majority users but are provided for good measure. A complete list of the events can be found at [Keycloak documentation](http://www.keycloak.org/docs-api/3.2/javadocs/org/keycloak/events/EventType.html).
 
 ### Featured events
 There are however a few events that are particularly more useful from a mobile app perspective. These events have been overriden by the SPI and are described more thoroughly below.
