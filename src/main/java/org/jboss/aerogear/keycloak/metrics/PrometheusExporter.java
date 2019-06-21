@@ -66,7 +66,7 @@ public final class PrometheusExporter {
         totalRegistrationsErrors = Counter.build()
             .name("keycloak_errors_registrations_total")
             .help("Total errors on registrations")
-            .labelNames("realm", "provider", "client_id")
+            .labelNames("realm", "provider", "error", "client_id")
             .register();
 
         responseErrors = Counter.build()
