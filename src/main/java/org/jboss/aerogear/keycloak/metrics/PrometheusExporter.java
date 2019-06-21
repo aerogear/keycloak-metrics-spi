@@ -30,6 +30,7 @@ public final class PrometheusExporter {
     final Counter totalLogins;
     final Counter totalFailedLoginAttempts;
     final Counter totalRegistrations;
+    final Counter totalRegistrationsErrors;
     final Counter responseErrors;
     final Histogram requestDuration;
 
@@ -45,21 +46,27 @@ public final class PrometheusExporter {
         totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
-            .labelNames("realm", "provider")
+            .labelNames("realm", "provider", "client_id")
             .register();
 
         // package private on purpose
         totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
-            .labelNames("realm", "provider", "error")
+            .labelNames("realm", "provider", "error", "client_id")
             .register();
 
         // package private on purpose
         totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
-            .labelNames("realm", "provider")
+            .labelNames("realm", "provider", "client_id")
+            .register();
+
+        totalRegistrationsErrors = Counter.build()
+            .name("keycloak_failed_registrations_attempts_total")
+            .help("Total failed registered users attempts")
+            .labelNames("realm", "provider", "client_id")
             .register();
 
         responseErrors = Counter.build()
@@ -149,7 +156,7 @@ public final class PrometheusExporter {
     public void recordLogin(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalLogins.labels(event.getRealmId(), provider).inc();
+        totalLogins.labels(event.getRealmId(), provider, event.getClientId()).inc();
     }
 
     /**
@@ -160,9 +167,19 @@ public final class PrometheusExporter {
     public void recordRegistration(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrations.labels(event.getRealmId(), provider).inc();
+        totalRegistrations.labels(event.getRealmId(), provider, event.getClientId()).inc();
     }
 
+    /**
+     * Increase the number of failed registered users attemps
+     *
+     * @param event RegisterError event
+     */
+    public void recordRegistrationError(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalRegistrationsErrors.labels(event.getRealmId(), provider, event.getError(), event.getClientId()).inc();
+    }
 
     /**
      * Increase the number of failed login attempts
@@ -172,7 +189,7 @@ public final class PrometheusExporter {
     public void recordLoginError(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError()).inc();
+        totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError(), event.getClientId()).inc();
     }
 
     /**
