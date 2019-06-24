@@ -22,6 +22,9 @@ public class MetricsEventListener implements EventListenerProvider {
             case REGISTER:
                 PrometheusExporter.instance().recordRegistration(event);
                 break;
+            case REGISTER_ERROR:
+                PrometheusExporter.instance().recordRegistrationError(event);
+                break;
             case LOGIN_ERROR:
                 PrometheusExporter.instance().recordLoginError(event);
                 break;
