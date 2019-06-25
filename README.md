@@ -81,33 +81,43 @@ Every single internal Keycloak event is being shared through the endpoint, with 
 There are however a few events that are particularly more useful from a mobile app perspective. These events have been overriden by the SPI and are described more thoroughly below.
 
 ##### keycloak_logins
-This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider**.
+This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider** and by client with the label **client_id**..
 
 ```c
 # HELP keycloak_logins Total successful logins
 # TYPE keycloak_logins gauge
-keycloak_logins{realm="test",provider="keycloak",} 3.0
-keycloak_logins{realm="test",provider="github",} 2.0
+keycloak_logins{realm="test",provider="keycloak",client_id="account"} 3.0
+keycloak_logins{realm="test",provider="github",client_id="application1"} 2.0
 ```
 
 ##### keycloak_failed_login_attempts
-This counter counts every login performed by a non-admin user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider**.
+This counter counts every login performed by a non-admin user that fails, being the error described by the label **error**. It also distinguishes logins by the identity provider used by means of the label **provider** and by client with the label **client_id**.
 
 ```c
 # HELP keycloak_failed_login_attempts Total failed login attempts
 # TYPE keycloak_failed_login_attempts gauge
-keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_user_credentials"} 6.0
-keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found"} 2.0
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_user_credentials",client_id="application1"} 6.0
+keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found",client_id="application1"} 2.0
 ```
 
 ##### keycloak_registrations
-This counter counts every new user registration. It also distinguishes registrations by the identity provider used by means of the label **provider**.
+This counter counts every new user registration. It also distinguishes registrations by the identity provider used by means of the label **provider** and by client with the label **client_id**..
 
 ```c
 # HELP keycloak_registrations Total registered users
 # TYPE keycloak_registrations gauge
-keycloak_registrations{realm="test",provider="keycloak",} 1.0
-keycloak_registrations{realm="test",provider="github",} 1.0
+keycloak_registrations{realm="test",provider="keycloak",client_id="application1"} 1.0
+keycloak_registrations{realm="test",provider="github",client_id="application1"} 1.0
+```
+
+##### keycloak_registrations_errors
+This counter counts every new user registration that fails, being the error described by the label **error**. It also distinguishes registrations by the identity provider used by means of the label **provider** and by client with the label **client_id**..
+
+```c
+# HELP keycloak_registrations_errors Total errors on registrations
+# TYPE keycloak_registrations_errors counter
+keycloak_registrations_errors{realm="test",provider="keycloak",error="invalid_registration",client_id="application1",} 2.0
+keycloak_registrations_errors{realm="test",provider="keycloak",error="email_in_use",client_id="application1",} 3.0
 ```
 
 ##### keycloak_request_duration
@@ -151,3 +161,7 @@ This counter counts the number of response errors (responses where the http stat
 # TYPE keycloak_response_errors counter
 keycloak_response_errors{code="500",method="GET",route="/",} 1
 ```
+
+## Grafana Dashboard
+
+You can use this dashboard or create yours https://grafana.com/dashboards/10441
