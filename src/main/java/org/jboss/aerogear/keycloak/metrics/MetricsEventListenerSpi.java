@@ -4,8 +4,6 @@ import org.keycloak.events.EventListenerSpi;
 import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 
-import java.util.EventListener;
-
 public class MetricsEventListenerSpi extends EventListenerSpi {
 
     @Override

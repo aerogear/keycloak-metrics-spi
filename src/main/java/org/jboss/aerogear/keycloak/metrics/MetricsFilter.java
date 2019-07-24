@@ -1,14 +1,15 @@
 package org.jboss.aerogear.keycloak.metrics;
 
-import com.google.common.collect.ImmutableSet;
+import org.jboss.logging.Logger;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import org.jboss.logging.Logger;
 
 public final class MetricsFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final Logger LOG = Logger.getLogger(MetricsFilter.class);
@@ -17,11 +18,13 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
     private static final MetricsFilter INSTANCE = new MetricsFilter();
 
     // relevant response content types to be measured
-    private static final Set<MediaType> CONTENT_TYPES = ImmutableSet.of(
-        MediaType.APPLICATION_JSON_TYPE,
-        MediaType.TEXT_HTML_TYPE,
-        MediaType.APPLICATION_XML_TYPE
-    );
+    private static final Set<MediaType> contentTypes = new HashSet<>();
+    static {
+        contentTypes.add(MediaType.APPLICATION_JSON_TYPE);
+        contentTypes.add(MediaType.APPLICATION_XML_TYPE);
+        contentTypes.add(MediaType.TEXT_HTML_TYPE);
+    }
+    private static final Set<MediaType> CONTENT_TYPES = Collections.unmodifiableSet(contentTypes);
 
     public static MetricsFilter instance() {
         return INSTANCE;
