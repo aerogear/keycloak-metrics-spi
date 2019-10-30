@@ -172,6 +172,16 @@ public class PrometheusExporterTest {
         assertGenericMetric("keycloak_response_errors", 1, tuple("code", "500"), tuple("method", "POST"), tuple("route", "/"));
     }
 
+    @Test
+    public void shouldTolerateNullLabels() throws IOException {
+        final Event nullEvent = new Event();
+        nullEvent.setClientId(null);
+        nullEvent.setError(null);
+        nullEvent.setRealmId(null);
+        PrometheusExporter.instance().recordLoginError(nullEvent);
+        assertMetric("keycloak_failed_login_attempts", 1, "", tuple("provider", "keycloak"), tuple("error", ""), tuple("client_id", ""));
+    }
+
     private void assertGenericMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);

@@ -1,5 +1,7 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import static com.google.common.base.Strings.nullToEmpty;
+
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
@@ -128,10 +130,10 @@ public final class PrometheusExporter {
     public void recordGenericEvent(final Event event) {
         final String counterName = buildCounterName(event.getType());
         if (counters.get(counterName) == null) {
-            logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), event.getRealmId());
+            logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), nullToEmpty(event.getRealmId()));
             return;
         }
-        counters.get(counterName).labels(event.getRealmId()).inc();
+        counters.get(counterName).labels(nullToEmpty(event.getRealmId())).inc();
     }
 
     /**
@@ -145,7 +147,7 @@ public final class PrometheusExporter {
             logger.warnf("Counter for admin event operation type %s does not exist. Resource type: %s, realm: %s", event.getOperationType().name(), event.getResourceType().name(), event.getRealmId());
             return;
         }
-        counters.get(counterName).labels(event.getRealmId(), event.getResourceType().name()).inc();
+        counters.get(counterName).labels(nullToEmpty(event.getRealmId()), event.getResourceType().name()).inc();
     }
 
     /**
@@ -156,7 +158,7 @@ public final class PrometheusExporter {
     public void recordLogin(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalLogins.labels(event.getRealmId(), provider, event.getClientId()).inc();
+        totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -167,7 +169,7 @@ public final class PrometheusExporter {
     public void recordRegistration(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrations.labels(event.getRealmId(), provider, event.getClientId()).inc();
+        totalRegistrations.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -178,7 +180,7 @@ public final class PrometheusExporter {
     public void recordRegistrationError(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrationsErrors.labels(event.getRealmId(), provider, event.getError(), event.getClientId()).inc();
+        totalRegistrationsErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -189,15 +191,15 @@ public final class PrometheusExporter {
     public void recordLoginError(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalFailedLoginAttempts.labels(event.getRealmId(), provider, event.getError(), event.getClientId()).inc();
+        totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
     }
 
     /**
      * Record the duration between one request and response
      *
-     * @param amt The duration in milliseconds
+     * @param amt    The duration in milliseconds
      * @param method HTTP method of the request
-     * @param route Request route / path
+     * @param route  Request route / path
      */
     public void recordRequestDuration(double amt, String method, String route) {
         requestDuration.labels(method, route).observe(amt);
@@ -206,9 +208,9 @@ public final class PrometheusExporter {
     /**
      * Increase the response error count by a given method and route
      *
-     * @param code The returned http status code
+     * @param code   The returned http status code
      * @param method The request method used
-     * @param route The request route / path
+     * @param route  The request route / path
      */
     public void recordResponseError(int code, String method, String route) {
         responseErrors.labels(Integer.toString(code), method, route).inc();
