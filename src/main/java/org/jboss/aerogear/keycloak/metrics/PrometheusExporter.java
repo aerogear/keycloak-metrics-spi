@@ -1,7 +1,5 @@
 package org.jboss.aerogear.keycloak.metrics;
 
-import static com.google.common.base.Strings.nullToEmpty;
-
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
@@ -255,4 +253,7 @@ public final class PrometheusExporter {
         return USER_EVENT_PREFIX + type.name();
     }
 
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
+    }
 }
