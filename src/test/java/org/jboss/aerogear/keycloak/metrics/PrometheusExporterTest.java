@@ -1,9 +1,12 @@
 package org.jboss.aerogear.keycloak.metrics;
 
-import io.prometheus.client.Counter;
+import io.prometheus.client.CollectorRegistry;
 import org.hamcrest.MatcherAssert;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -12,6 +15,7 @@ import org.keycloak.events.admin.ResourceType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -23,14 +27,15 @@ public class PrometheusExporterTest {
 
     private static final String DEFAULT_REALM = "myrealm";
 
+    @Rule
+    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+
     @Before
-    public void before() {
-        for (Counter counter : PrometheusExporter.instance().counters.values()) {
-            counter.clear();
-        }
-        PrometheusExporter.instance().totalLogins.clear();
-        PrometheusExporter.instance().totalFailedLoginAttempts.clear();
-        PrometheusExporter.instance().totalRegistrations.clear();
+    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field instance = PrometheusExporter.class.getDeclaredField("INSTANCE");
+        instance.setAccessible(true);
+        instance.set(null, null);
+        CollectorRegistry.defaultRegistry.clear();
     }
 
     @Test
@@ -181,6 +186,20 @@ public class PrometheusExporterTest {
         PrometheusExporter.instance().recordLoginError(nullEvent);
         assertMetric("keycloak_failed_login_attempts", 1, "", tuple("provider", "keycloak"), tuple("error", ""), tuple("client_id", ""));
     }
+
+    @Test
+    public void shouldBuildPushgateway() throws IOException {
+        final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
+        final String address = "localhost:9091";
+        environmentVariables.set(envVar, address);
+        Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
+    @Test
+    public void shouldNotBuildPushgateway() throws IOException {
+        Assert.assertNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
 
     private void assertGenericMetric(String metricName, double metricValue, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
