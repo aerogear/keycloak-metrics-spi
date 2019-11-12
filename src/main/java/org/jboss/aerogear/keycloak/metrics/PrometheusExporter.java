@@ -13,6 +13,8 @@ import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -283,7 +285,9 @@ public final class PrometheusExporter {
     private void push() {
         if(PUSH_GATEWAY != null) {
             try {
-                PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, "keycloak");
+                String instanceIp = InetAddress.getLocalHost().getHostAddress();
+                Map<String, String> groupingKey = Collections.singletonMap("instance", instanceIp);
+                PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, "keycloak", groupingKey);
             } catch (IOException e) {
                 logger.error("Unable to send to prometheus PushGateway", e);
             }
