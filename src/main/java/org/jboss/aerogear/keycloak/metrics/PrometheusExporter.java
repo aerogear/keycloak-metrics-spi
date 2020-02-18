@@ -46,27 +46,27 @@ public final class PrometheusExporter {
         totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
-            .labelNames("realm", "provider", "client_id")
+            .labelNames("realm", "userId", "provider", "client_id")
             .register();
 
         // package private on purpose
         totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
-            .labelNames("realm", "provider", "error", "client_id")
+            .labelNames("realm", "userId", "provider", "error", "client_id")
             .register();
 
         // package private on purpose
         totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
-            .labelNames("realm", "provider", "client_id")
+            .labelNames("realm", "userId", "provider", "client_id")
             .register();
 
         totalRegistrationsErrors = Counter.build()
             .name("keycloak_registrations_errors")
             .help("Total errors on registrations")
-            .labelNames("realm", "provider", "error", "client_id")
+            .labelNames("realm", "userId", "provider", "error", "client_id")
             .register();
 
         responseErrors = Counter.build()
@@ -156,7 +156,7 @@ public final class PrometheusExporter {
     public void recordLogin(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalLogins.labels(nullToEmpty(event.getRealmId()),nullToEmpty(event.getUserId()), provider, nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -167,7 +167,7 @@ public final class PrometheusExporter {
     public void recordRegistration(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrations.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalRegistrations.labels(nullToEmpty(event.getRealmId()),nullToEmpty(event.getUserId()), provider, nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -178,7 +178,7 @@ public final class PrometheusExporter {
     public void recordRegistrationError(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrationsErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalRegistrationsErrors.labels(nullToEmpty(event.getRealmId()), nullToEmpty(event.getUserId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
     }
 
     /**
@@ -189,7 +189,7 @@ public final class PrometheusExporter {
     public void recordLoginError(final Event event) {
         final String provider = getIdentityProvider(event);
 
-        totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), nullToEmpty(event.getUserId()) , provider,nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
     }
 
     /**
