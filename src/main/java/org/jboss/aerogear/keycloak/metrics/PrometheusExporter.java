@@ -46,27 +46,27 @@ public final class PrometheusExporter {
         totalLogins = Counter.build()
             .name("keycloak_logins")
             .help("Total successful logins")
-            .labelNames("realm", "userId", "provider", "client_id")
+            .labelNames("realm", "user_id", "provider", "client_id")
             .register();
 
         // package private on purpose
         totalFailedLoginAttempts = Counter.build()
             .name("keycloak_failed_login_attempts")
             .help("Total failed login attempts")
-            .labelNames("realm", "userId", "provider", "error", "client_id")
+            .labelNames("realm", "user_id", "provider", "error", "client_id")
             .register();
 
         // package private on purpose
         totalRegistrations = Counter.build()
             .name("keycloak_registrations")
             .help("Total registered users")
-            .labelNames("realm", "userId", "provider", "client_id")
+            .labelNames("realm", "user_id", "provider", "client_id")
             .register();
 
         totalRegistrationsErrors = Counter.build()
             .name("keycloak_registrations_errors")
             .help("Total errors on registrations")
-            .labelNames("realm", "userId", "provider", "error", "client_id")
+            .labelNames("realm", "user_id", "provider", "error", "client_id")
             .register();
 
         responseErrors = Counter.build()

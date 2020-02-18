@@ -49,38 +49,38 @@ public class PrometheusExporterTest {
     public void shouldCorrectlyCountLoginWhenIdentityProviderIsDefined() throws IOException {
         final Event login1 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", "user1",tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", 1, tuple("userId", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login2 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", 1, tuple("userId", ""), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", ""), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
     public void shouldCorrectlyCountLoginWhenIdentityProviderIsNotDefined() throws IOException {
         final Event login1 = createEvent(EventType.LOGIN,"");
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", 1, tuple("userId", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login2 = createEvent(EventType.LOGIN,"");
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", 2, tuple("userId", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 2, tuple("user_id", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login3 = createEvent(EventType.LOGIN,"user1");
         PrometheusExporter.instance().recordLogin(login3);
-        assertMetric("keycloak_logins", 1, tuple("userId", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login4 = createEvent(EventType.LOGIN,"user1");
         PrometheusExporter.instance().recordLogin(login4);
-        assertMetric("keycloak_logins", 2, tuple("userId", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 2, tuple("user_id", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login5 = createEvent(EventType.LOGIN,"user1");
         PrometheusExporter.instance().recordLogin(login5);
-        assertMetric("keycloak_logins", 3, tuple("userId", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 3, tuple("user_id", "user1"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
 
         final Event login6 = createEvent(EventType.LOGIN,"user2");
         PrometheusExporter.instance().recordLogin(login6);
-        assertMetric("keycloak_logins", 1, tuple("userId", "user2"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user2"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
@@ -88,23 +88,23 @@ public class PrometheusExporterTest {
         // with id provider defined
         final Event login1 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", "user_login1", tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);
-        assertMetric("keycloak_logins", 1, tuple("userId", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
 
         // without id provider defined
         final Event login2 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", "user_login2");
         PrometheusExporter.instance().recordLogin(login2);
-        assertMetric("keycloak_logins", 1, tuple("userId", "user_login2"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
-        assertMetric("keycloak_logins", 1, tuple("userId", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user_login2"), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
 
         // with id provider defined
         final Event login3 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID",  tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login3);
-        assertMetric("keycloak_logins", 1, tuple("userId", ""), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", ""), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
 
         // without id provider defined
         final Event login4 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID");
         PrometheusExporter.instance().recordLogin(login4);
-        assertMetric("keycloak_logins", 1, tuple("userId", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("user_id", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
@@ -121,8 +121,8 @@ public class PrometheusExporterTest {
         final Event login3 = createEvent(EventType.LOGIN, "OTHER_REALM", "THE_CLIENT_ID",  tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login3);
 
-        assertMetric("keycloak_logins", 1, DEFAULT_REALM, tuple("userId", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
-        assertMetric("keycloak_logins", 2, "OTHER_REALM", tuple("userId", "") , tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, DEFAULT_REALM, tuple("user_id", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 2, "OTHER_REALM", tuple("user_id", "") , tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
@@ -130,12 +130,12 @@ public class PrometheusExporterTest {
         // with id provider defined
         final Event event1 = createEvent(EventType.LOGIN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_login1", "login_error",tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLoginError(event1);
-        assertMetric("keycloak_failed_login_attempts", 1, tuple("userId", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("error", "login_error"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_failed_login_attempts", 1, tuple("user_id", "user_login1"), tuple("provider", "THE_ID_PROVIDER"), tuple("error", "login_error"), tuple("client_id", "THE_CLIENT_ID"));
 
         // without id provider defined
         final Event event2 = createEvent(EventType.LOGIN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found", "login_failed");
         PrometheusExporter.instance().recordLoginError(event2);
-        assertMetric("keycloak_failed_login_attempts", 1, tuple("userId", "user_not_found"), tuple("provider", "keycloak"), tuple("error", "login_failed"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_failed_login_attempts", 1, tuple("user_id", "user_not_found"), tuple("provider", "keycloak"), tuple("error", "login_failed"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
@@ -143,12 +143,12 @@ public class PrometheusExporterTest {
         // with id provider defined
         final Event event1 = createEvent(EventType.REGISTER, DEFAULT_REALM, "THE_CLIENT_ID", "user1",tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordRegistration(event1);
-        assertMetric("keycloak_registrations", 1, tuple("userId", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_registrations", 1, tuple("user_id", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
 
         // without id provider defined
         final Event event2 = createEvent(EventType.REGISTER, DEFAULT_REALM, "THE_CLIENT_ID","");
         PrometheusExporter.instance().recordRegistration(event2);
-        assertMetric("keycloak_registrations", 1, tuple("userId", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_registrations", 1, tuple("user_id", ""), tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
@@ -156,12 +156,12 @@ public class PrometheusExporterTest {
         // with id provider defined
         final Event event1 = createEvent(EventType.REGISTER, DEFAULT_REALM, "THE_CLIENT_ID", "user1","registration_failed",tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordRegistrationError(event1);
-        assertMetric("keycloak_registrations_errors", 1, tuple("userId", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("error", "registration_failed"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_registrations_errors", 1, tuple("user_id", "user1"), tuple("provider", "THE_ID_PROVIDER"), tuple("error", "registration_failed"), tuple("client_id", "THE_CLIENT_ID"));
 
         // without id provider defined
         final Event event2 = createEvent(EventType.REGISTER, DEFAULT_REALM, "THE_CLIENT_ID","","registration_failed");
         PrometheusExporter.instance().recordRegistrationError(event2);
-        assertMetric("keycloak_registrations_errors", 1, tuple("userId", ""), tuple("provider", "keycloak"), tuple("error", "registration_failed"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_registrations_errors", 1, tuple("user_id", ""), tuple("provider", "keycloak"), tuple("error", "registration_failed"), tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
