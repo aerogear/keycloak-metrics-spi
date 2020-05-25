@@ -86,7 +86,7 @@ public final class PrometheusExporter {
             .name("keycloak_request_duration")
             .help("Request duration")
             .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
-            .labelNames("method", "route")
+            .labelNames("method")
             .register();
 
         // Counters for all user events
@@ -213,10 +213,9 @@ public final class PrometheusExporter {
      *
      * @param amt    The duration in milliseconds
      * @param method HTTP method of the request
-     * @param route  Request route / path
      */
-    public void recordRequestDuration(double amt, String method, String route) {
-        requestDuration.labels(method, route).observe(amt);
+    public void recordRequestDuration(double amt, String method) {
+        requestDuration.labels(method).observe(amt);
         pushAsync();
     }
 

@@ -166,9 +166,9 @@ public class PrometheusExporterTest {
 
     @Test
     public void shouldCorrectlyRecordResponseDurations() throws IOException {
-        PrometheusExporter.instance().recordRequestDuration(5, "GET", "/");
-        assertGenericMetric("keycloak_request_duration_count", 1, tuple("method", "GET"), tuple("route", "/"));
-        assertGenericMetric("keycloak_request_duration_sum", 5, tuple("method", "GET"), tuple("route", "/"));
+        PrometheusExporter.instance().recordRequestDuration(5, "GET");
+        assertGenericMetric("keycloak_request_duration_count", 1, tuple("method", "GET"));
+        assertGenericMetric("keycloak_request_duration_sum", 5, tuple("method", "GET"));
     }
 
     @Test

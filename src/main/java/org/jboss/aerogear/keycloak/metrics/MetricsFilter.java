@@ -55,7 +55,7 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
             long time = (long) req.getProperty(METRICS_REQUEST_TIMESTAMP);
             long dur = System.currentTimeMillis() - time;
             LOG.trace("Duration is calculated as " + dur + " ms.");
-            PrometheusExporter.instance().recordRequestDuration(dur, req.getMethod(), route);
+            PrometheusExporter.instance().recordRequestDuration(dur, req.getMethod());
         }
     }
 
