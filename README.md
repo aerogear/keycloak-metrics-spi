@@ -53,6 +53,16 @@ To enable the event listener via the Keycloak CLI, such as when building a Docke
     /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
     /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
     /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+    
+### PushGateway
+
+If you are running keycloak in a cluster or if you are running behind a load balancer, you might have problems scraping
+the metrics endpoint of each node. To fix this, you can push your metrics to a PushGateway. 
+
+[Prometheus PushGateway](https://github.com/prometheus/pushgateway)
+
+You can enable pushing to PushGateway by setting the environment variable ```PROMETHEUS_PUSHGATEWAY_ADDRESS``` in the keycloak
+instance. The format is host:port or ip:port of the Pushgateway.
 
 ## Metrics
 

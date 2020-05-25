@@ -36,9 +36,11 @@ dependencies {
     compile group: 'org.jboss.spec.javax.ws.rs', name: 'jboss-jaxrs-api_2.0_spec', version: '1.0.0.Final'
     bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: prometheusVersion
+    bundleLib group: 'io.prometheus', name: 'simpleclient_pushgateway', version: prometheusVersion
     configurations.compile.extendsFrom(configurations.bundleLib)
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
 }
 
 jar {

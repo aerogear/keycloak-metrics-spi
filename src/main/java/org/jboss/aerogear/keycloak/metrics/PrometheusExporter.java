@@ -3,6 +3,7 @@ package org.jboss.aerogear.keycloak.metrics;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
+import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.jboss.logging.Logger;
@@ -12,8 +13,11 @@ import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public final class PrometheusExporter {
 
@@ -21,7 +25,7 @@ public final class PrometheusExporter {
     private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
     private final static String PROVIDER_KEYCLOAK_OPENID = "keycloak";
 
-    private final static PrometheusExporter INSTANCE = new PrometheusExporter();
+    private static PrometheusExporter INSTANCE;
 
     private final static Logger logger = Logger.getLogger(PrometheusExporter.class);
 
@@ -33,6 +37,7 @@ public final class PrometheusExporter {
     final Counter totalRegistrationsErrors;
     final Counter responseErrors;
     final Histogram requestDuration;
+    final PushGateway PUSH_GATEWAY;
 
     private PrometheusExporter() {
         // The metrics collector needs to be a singleton because requiring a
@@ -41,6 +46,8 @@ public final class PrometheusExporter {
         // or intentional but better to avoid this. The metrics object is single-instance
         // anyway and all the Gauges are suggested to be static (it does not really make
         // sense to record the same metric in multiple places)
+
+        PUSH_GATEWAY = buildPushGateWay();
 
         // package private on purpose
         totalLogins = Counter.build()
@@ -101,7 +108,10 @@ public final class PrometheusExporter {
         DefaultExports.initialize();
     }
 
-    public static PrometheusExporter instance() {
+    public static synchronized PrometheusExporter instance() {
+        if (INSTANCE == null) {
+            INSTANCE = new PrometheusExporter();
+        }
         return INSTANCE;
     }
 
@@ -132,6 +142,7 @@ public final class PrometheusExporter {
             return;
         }
         counters.get(counterName).labels(nullToEmpty(event.getRealmId())).inc();
+        pushAsync();
     }
 
     /**
@@ -146,6 +157,7 @@ public final class PrometheusExporter {
             return;
         }
         counters.get(counterName).labels(nullToEmpty(event.getRealmId()), event.getResourceType().name()).inc();
+        pushAsync();
     }
 
     /**
@@ -157,6 +169,7 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        pushAsync();
     }
 
     /**
@@ -168,6 +181,7 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalRegistrations.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        pushAsync();
     }
 
     /**
@@ -179,6 +193,7 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalRegistrationsErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
     }
 
     /**
@@ -190,6 +205,7 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
     }
 
     /**
@@ -201,6 +217,7 @@ public final class PrometheusExporter {
      */
     public void recordRequestDuration(double amt, String method, String route) {
         requestDuration.labels(method, route).observe(amt);
+        pushAsync();
     }
 
     /**
@@ -212,6 +229,7 @@ public final class PrometheusExporter {
      */
     public void recordResponseError(int code, String method, String route) {
         responseErrors.labels(Integer.toString(code), method, route).inc();
+        pushAsync();
     }
 
     /**
@@ -243,6 +261,37 @@ public final class PrometheusExporter {
         final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
         TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
         writer.flush();
+    }
+
+    /**
+     * Build a prometheus pushgateway if an address is defined in environment.
+     *
+     * @return PushGateway
+     */
+    private PushGateway buildPushGateWay() {
+        // host:port or ip:port of the Pushgateway.
+        String host = System.getenv("PROMETHEUS_PUSHGATEWAY_ADDRESS");
+        if(host != null){
+            return new PushGateway(host);
+        } else {
+            return null;
+        }
+    }
+
+    public void pushAsync() {
+        CompletableFuture.runAsync(() -> push());
+    }
+
+    private void push() {
+        if(PUSH_GATEWAY != null) {
+            try {
+                String instanceIp = InetAddress.getLocalHost().getHostAddress();
+                Map<String, String> groupingKey = Collections.singletonMap("instance", instanceIp);
+                PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, "keycloak", groupingKey);
+            } catch (IOException e) {
+                logger.error("Unable to send to prometheus PushGateway", e);
+            }
+        }
     }
 
     private String buildCounterName(OperationType type) {
