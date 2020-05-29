@@ -79,7 +79,7 @@ public final class PrometheusExporter {
         responseErrors = Counter.build()
             .name("keycloak_response_errors")
             .help("Total number of error responses")
-            .labelNames("code", "method", "route")
+            .labelNames("code", "method")
             .register();
 
         requestDuration = Histogram.build()
@@ -220,14 +220,13 @@ public final class PrometheusExporter {
     }
 
     /**
-     * Increase the response error count by a given method and route
+     * Increase the response error count by a given method and response code
      *
      * @param code   The returned http status code
      * @param method The request method used
-     * @param route  The request route / path
      */
-    public void recordResponseError(int code, String method, String route) {
-        responseErrors.labels(Integer.toString(code), method, route).inc();
+    public void recordResponseError(int code, String method) {
+        responseErrors.labels(Integer.toString(code), method).inc();
         pushAsync();
     }
 

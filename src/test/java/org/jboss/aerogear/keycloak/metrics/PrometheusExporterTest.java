@@ -173,8 +173,8 @@ public class PrometheusExporterTest {
 
     @Test
     public void shouldCorrectlyRecordResponseErrors() throws IOException {
-        PrometheusExporter.instance().recordResponseError(500, "POST", "/");
-        assertGenericMetric("keycloak_response_errors", 1, tuple("code", "500"), tuple("method", "POST"), tuple("route", "/"));
+        PrometheusExporter.instance().recordResponseError(500, "POST");
+        assertGenericMetric("keycloak_response_errors", 1, tuple("code", "500"), tuple("method", "POST"));
     }
 
     @Test

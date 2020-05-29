@@ -39,13 +39,12 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
 
     @Override
     public void filter(ContainerRequestContext req, ContainerResponseContext res) {
-        String route = req.getUriInfo().getPath();
         int status = res.getStatus();
 
         // We are only interested in recording the response status if it was an error
         // (either a 4xx or 5xx). No point in counting  the successful responses
         if (status >= 400) {
-            PrometheusExporter.instance().recordResponseError(status, req.getMethod(), route);
+            PrometheusExporter.instance().recordResponseError(status, req.getMethod());
         }
 
         // Record request duration if timestamp property is present
