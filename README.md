@@ -131,7 +131,7 @@ keycloak_registrations_errors{realm="test",provider="keycloak",error="email_in_u
 ```
 
 ##### keycloak_request_duration
-This histogram records the response times per route and http method and puts them in one of nine buckets:
+This histogram records the response times per http method and puts them in one of nine buckets:
 
 * Requests that take 50ms or less
 * Requests that take 100ms or less
@@ -148,22 +148,22 @@ The response from this type of metrics has the following format:
 ```c
 # HELP keycloak_request_duration Request duration
 # TYPE keycloak_request_duration histogram
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="50.0",} 0.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="100.0",} 0.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="250.0",} 0.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="500.0",} 0.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="1000.0",} 1.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="2000.0",} 2.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="10000.0",} 2.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="30000.0",} 2.0
-keycloak_request_duration_bucket{method="PUT",route="/admin/realms/openshift/clients/3scale",le="+Inf",} 2.0
-keycloak_request_duration_count{method="PUT",route="/admin/realms/openshift/clients/3scale",} 2.0
-keycloak_request_duration_sum{method="PUT",route="/admin/realms/openshift/clients/3scale",} 3083.0
+keycloak_request_duration_bucket{method="PUT",le="50.0",} 0.0
+keycloak_request_duration_bucket{method="PUT",le="100.0",} 0.0
+keycloak_request_duration_bucket{method="PUT",le="250.0",} 0.0
+keycloak_request_duration_bucket{method="PUT",le="500.0",} 0.0
+keycloak_request_duration_bucket{method="PUT",le="1000.0",} 1.0
+keycloak_request_duration_bucket{method="PUT",le="2000.0",} 2.0
+keycloak_request_duration_bucket{method="PUT",le="10000.0",} 2.0
+keycloak_request_duration_bucket{method="PUT",le="30000.0",} 2.0
+keycloak_request_duration_bucket{method="PUT",le="+Inf",} 2.0
+keycloak_request_duration_count{method="PUT",} 2.0
+keycloak_request_duration_sum{method="PUT",} 3083.0
 ```
 
 This tells you that there have been zero requests that took less than 500ms. There was one request that took less than 1s. All the other requests took less than 2s.
 
-Aside from the buckets there are also the `sum` and `count` metrics for every route and method. In the above example they tell you that there have been two requests total for this route & http method. The sum of all response times for this combination is 3083ms.
+Aside from the buckets there are also the `sum` and `count` metrics for every method. In the above example they tell you that there have been two requests total for this http method. The sum of all response times for this combination is 3083ms.
 
 To get the average request duration over the last five minutes for the whole server you can use the following Prometheus query:
 
@@ -177,7 +177,7 @@ This counter counts the number of response errors (responses where the http stat
 ```c
 # HELP keycloak_response_errors Total number of error responses
 # TYPE keycloak_response_errors counter
-keycloak_response_errors{code="500",method="GET",route="/",} 1
+keycloak_response_errors{code="500",method="GET",} 1
 ```
 
 ## Grafana Dashboard
