@@ -42,13 +42,31 @@ $ ./gradlew -PkeycloakVersion="4.7.0.Final" -PprometheusVersion="0.3.0" jar
 
 or by changing the `gradle.properties` file in the root of the project.
 
-## Usage
+## Install and setup
 
-Just drop the jar into the _providers_ subdirectory of your Keycloak installation.
+> This section assumes `/opt/jboss` as the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.
 
-To enable the event listener via the GUI interface, go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
+- Drop the [jar](https://github.com/aerogear/keycloak-metrics-spi/releases/latest) into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
 
-To enable the event listener via the Keycloak CLI, such as when building a Docker container, use these commands. (These commands assume /opt/jboss is the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.)
+- Add a new spi `eventsListeners` to the keycloak-server subsystem in `/opt/jboss/keycloak/standalone/configuration/standalone.xml`
+```xml
+        <subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">
+        ...
+        <!-- ADD THIS BLOCK -->
+            <spi name="eventsListeners">
+                <provider name="metrics-listener" enabled="true"/>
+            </spi>
+        <!-- END OF BLOCK -->
+        ...
+        </subsystem>
+```
+- Restart the keycloak service.
+
+### Enable metrics-listener event
+
+- To enable the event listener via the GUI interface, go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
+
+- To enable the event listener via the Keycloak CLI, such as when building a Docker container, use these commands.
 
     /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
     /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
