@@ -68,9 +68,11 @@ or by changing the `gradle.properties` file in the root of the project.
 
 - To enable the event listener via the Keycloak CLI, such as when building a Docker container, use these commands.
 
-    /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
-    /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
-    /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+```c
+$ /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
+$ /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
+$ usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+```
     
 ### PushGateway
 
