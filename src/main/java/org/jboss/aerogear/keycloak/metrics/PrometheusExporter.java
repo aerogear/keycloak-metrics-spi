@@ -263,6 +263,11 @@ public final class PrometheusExporter {
         writer.flush();
     }
 
+    /**
+     * Build a prometheus pushgateway if an address is defined in environment.
+     *
+     * @return PushGateway
+     */
     private PushGateway buildPushGateWay() {
         // host:port or ip:port of the Pushgateway.
         PushGateway pg = null;
