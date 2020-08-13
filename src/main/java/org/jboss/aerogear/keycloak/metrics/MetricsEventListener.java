@@ -1,15 +1,25 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import java.util.Map;
+import java.util.HashMap;
 import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 
 public class MetricsEventListener implements EventListenerProvider {
 
     public final static String ID = "metrics-listener";
 
     private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
+
+    private KeycloakSession session;
+
+    public MetricsEventListener (KeycloakSession session) {
+        this.session = session;
+    }
 
     @Override
     public void onEvent(Event event) {
@@ -31,6 +41,8 @@ public class MetricsEventListener implements EventListenerProvider {
             default:
                 PrometheusExporter.instance().recordGenericEvent(event);
         }
+
+        setSessions(session.realms().getRealm(event.getRealmId()));
     }
 
     @Override
@@ -38,6 +50,23 @@ public class MetricsEventListener implements EventListenerProvider {
         logAdminEventDetails(event);
 
         PrometheusExporter.instance().recordGenericAdminEvent(event);
+
+        setSessions(session.realms().getRealm(event.getRealmId()));
+    }
+
+    private void setSessions(RealmModel realm) {
+
+        Map<String,Long> onlineSessions = new HashMap<String,Long>();
+        session.sessions().getActiveClientSessionStats(realm,false).forEach((id, count) -> 
+            onlineSessions.put(realm.getClientById(id).getClientId(), count)
+        );
+
+        Map<String,Long> offlineSessions = new HashMap<String,Long>(); 
+        session.sessions().getActiveClientSessionStats(realm,true).forEach((id, count) -> 
+            offlineSessions.put(realm.getClientById(id).getClientId(), count)
+        );
+
+        PrometheusExporter.instance().recordSessions(realm.getId(), onlineSessions, offlineSessions);
     }
 
     private void logEventDetails(Event event) {

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -175,6 +176,26 @@ public class PrometheusExporterTest {
     public void shouldCorrectlyRecordResponseErrors() throws IOException {
         PrometheusExporter.instance().recordResponseError(500, "POST");
         assertGenericMetric("keycloak_response_errors", 1, tuple("code", "500"), tuple("method", "POST"));
+    }
+
+    @Test
+    public void shouldCorrectlyRecordSessions() throws IOException {
+
+        Map<String,Long> map1 = new HashMap<String, Long>() {{
+            put("account", new Long(10));
+            put("admin-cli", new Long(0));
+        }};
+
+        Map<String,Long> map2 = new HashMap<String, Long>() {{
+            put("account", new Long(0));
+            put("admin-cli", new Long(10));
+        }};
+        
+        PrometheusExporter.instance().recordSessions(DEFAULT_REALM, map1, map2);
+        assertGenericMetric("keycloak_online_sessions", 10, tuple("realm", DEFAULT_REALM), tuple("client_id", "account"));
+        assertGenericMetric("keycloak_online_sessions", 0, tuple("realm", DEFAULT_REALM), tuple("client_id", "admin-cli"));
+        assertGenericMetric("keycloak_offline_sessions", 0, tuple("realm", DEFAULT_REALM), tuple("client_id", "account"));
+        assertGenericMetric("keycloak_offline_sessions", 10, tuple("realm", DEFAULT_REALM), tuple("client_id", "admin-cli"));
     }
 
     @Test
