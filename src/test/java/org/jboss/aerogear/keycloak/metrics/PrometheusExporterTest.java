@@ -196,6 +196,14 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldBuildPushgatewayWithHttps() throws IOException {
+        final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
+        final String address = "https://localhost:9091";
+        environmentVariables.set(envVar, address);
+        Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
+    @Test
     public void shouldNotBuildPushgateway() throws IOException {
         Assert.assertNull(PrometheusExporter.instance().PUSH_GATEWAY);
     }

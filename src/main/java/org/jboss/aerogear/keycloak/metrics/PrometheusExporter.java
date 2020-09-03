@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 public final class PrometheusExporter {
 
@@ -268,12 +270,21 @@ public final class PrometheusExporter {
      */
     private PushGateway buildPushGateWay() {
         // host:port or ip:port of the Pushgateway.
+        PushGateway pg = null;
         String host = System.getenv("PROMETHEUS_PUSHGATEWAY_ADDRESS");
-        if(host != null){
-            return new PushGateway(host);
-        } else {
-            return null;
+        if (host != null) {
+            // if protocoll is missing in host, we assume http
+            if (!host.toLowerCase().startsWith("http://") && !host.startsWith("https://")) {
+                host = "http://" + host;
+            }
+            try {
+                pg = new PushGateway(new URL(host));
+                logger.info("Pushgatway created with url " + host + ".");
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return pg;
     }
 
     public void pushAsync() {
