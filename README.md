@@ -48,17 +48,12 @@ or by changing the `gradle.properties` file in the root of the project.
 
 - Drop the [jar](https://github.com/aerogear/keycloak-metrics-spi/releases/latest) into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
 
-- Add a new spi `eventsListeners` to the keycloak-server subsystem in `/opt/jboss/keycloak/standalone/configuration/standalone.xml`
-```xml
-        <subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">
-        ...
-        <!-- ADD THIS BLOCK -->
-            <spi name="eventsListeners">
-                <provider name="metrics-listener" enabled="true"/>
-            </spi>
-        <!-- END OF BLOCK -->
-        ...
-        </subsystem>
+- Touch a dodeploy file into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
+
+```bash
+# If your jar file is `keycloak-metrics-spi-2.0.2.jar`
+cd /opt/jboss/keycloak/standalone/deployments/
+touch keycloak-metrics-spi-2.0.2.jar.dodeploy
 ```
 - Restart the keycloak service.
 
