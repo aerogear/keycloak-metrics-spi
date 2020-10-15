@@ -126,7 +126,7 @@ public final class PrometheusExporter {
         if (isAdmin) {
             counter.labelNames("realm", "resource").help("Generic KeyCloak Admin event");
         } else {
-            counter.labelNames("realm").help("Generic KeyCloak User event");
+            counter.labelNames("realm", "client_id").help("Generic KeyCloak User event");
         }
 
         return counter.register();
@@ -143,7 +143,7 @@ public final class PrometheusExporter {
             logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), nullToEmpty(event.getRealmId()));
             return;
         }
-        counters.get(counterName).labels(nullToEmpty(event.getRealmId())).inc();
+        counters.get(counterName).labels(nullToEmpty(event.getRealmId()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
