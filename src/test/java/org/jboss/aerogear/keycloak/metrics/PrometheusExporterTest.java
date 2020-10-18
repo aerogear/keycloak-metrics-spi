@@ -178,6 +178,12 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldCorrectlyRecordCountUsers() throws IOException {
+        PrometheusExporter.instance().recordCountUsers(DEFAULT_REALM, 5);
+        assertGenericMetric("keycloak_count_users", 5, tuple("realm", DEFAULT_REALM));
+    }
+
+    @Test
     public void shouldTolerateNullLabels() throws IOException {
         final Event nullEvent = new Event();
         nullEvent.setClientId(null);
