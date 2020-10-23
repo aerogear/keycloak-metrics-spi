@@ -37,6 +37,12 @@ public final class PrometheusExporter {
     final Counter totalFailedLoginAttempts;
     final Counter totalRegistrations;
     final Counter totalRegistrationsErrors;
+    final Counter totalRefreshTokens;
+    final Counter totalRefreshTokensErrors;
+    final Counter totalClientLogins;
+    final Counter totalFailedClientLoginAttempts;
+    final Counter totalCodeToTokens;
+    final Counter totalCodeToTokensErrors;
     final Counter responseErrors;
     final Histogram requestDuration;
     final PushGateway PUSH_GATEWAY;
@@ -72,9 +78,52 @@ public final class PrometheusExporter {
             .labelNames("realm", "provider", "client_id")
             .register();
 
+        // package private on purpose
         totalRegistrationsErrors = Counter.build()
             .name("keycloak_registrations_errors")
             .help("Total errors on registrations")
+            .labelNames("realm", "provider", "error", "client_id")
+            .register();
+
+        // package private on purpose
+        totalRefreshTokens = Counter.build()
+            .name("keycloak_refresh_tokens")
+            .help("Total number of successful token refreshes")
+            .labelNames("realm", "provider", "client_id")
+            .register();
+
+        // package private on purpose
+        totalRefreshTokensErrors = Counter.build()
+            .name("keycloak_refresh_tokens_errors")
+            .help("Total number of failed token refreshes")
+            .labelNames("realm", "provider", "error", "client_id")
+            .register();
+
+        // package private on purpose
+        totalClientLogins = Counter.build()
+            .name("keycloak_client_logins")
+            .help("Total successful client logins")
+            .labelNames("realm", "provider", "client_id")
+            .register();
+
+        // package private on purpose
+        totalFailedClientLoginAttempts = Counter.build()
+            .name("keycloak_failed_client_login_attempts")
+            .help("Total failed client login attempts")
+            .labelNames("realm", "provider", "error", "client_id")
+            .register();
+
+        // package private on purpose
+        totalCodeToTokens = Counter.build()
+            .name("keycloak_code_to_tokens")
+            .help("Total number of successful code to token")
+            .labelNames("realm", "provider", "client_id")
+            .register();
+
+        // package private on purpose
+        totalCodeToTokensErrors = Counter.build()
+            .name("keycloak_code_to_tokens_errors")
+            .help("Total number of failed code to token")
             .labelNames("realm", "provider", "error", "client_id")
             .register();
 
@@ -207,6 +256,78 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of currently client logged
+     *
+     * @param event ClientLogin event
+     */
+    public void recordClientLogin(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalClientLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of failed login attempts
+     *
+     * @param event ClientLoginError event
+     */
+    public void recordClientLoginError(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalFailedClientLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of refreshes tokens
+     *
+     * @param event RefreshToken event
+     */
+    public void recordRefreshToken(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalRefreshTokens.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of failed refreshes tokens attempts
+     *
+     * @param event RefreshTokenError event
+     */
+    public void recordRefreshTokenError(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalRefreshTokensErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of code to tokens
+     *
+     * @param event CodeToToken event
+     */
+    public void recordCodeToToken(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalCodeToTokens.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the number of failed code to tokens attempts
+     *
+     * @param event CodeToTokenError event
+     */
+    public void recordCodeToTokenError(final Event event) {
+        final String provider = getIdentityProvider(event);
+
+        totalCodeToTokensErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 

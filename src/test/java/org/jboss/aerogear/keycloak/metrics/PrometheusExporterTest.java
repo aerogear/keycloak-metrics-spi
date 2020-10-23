@@ -129,6 +129,90 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldCorrectlyCountRefreshTokens() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.REFRESH_TOKEN, DEFAULT_REALM, "THE_CLIENT_ID", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordRefreshToken(event1);
+        assertMetric("keycloak_refresh_tokens", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.REFRESH_TOKEN, DEFAULT_REALM, "THE_CLIENT_ID");
+        PrometheusExporter.instance().recordRefreshToken(event2);
+        assertMetric("keycloak_refresh_tokens", 1, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_refresh_tokens", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
+    public void shouldCorrectlyCountRefreshTokensErrors() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.REFRESH_TOKEN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordRefreshTokenError(event1);
+        assertMetric("keycloak_refresh_tokens_errors", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.REFRESH_TOKEN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found");
+        PrometheusExporter.instance().recordRefreshTokenError(event2);
+        assertMetric("keycloak_refresh_tokens_errors", 1, tuple("provider", "keycloak"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_refresh_tokens_errors", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
+    public void shouldCorrectlyCountClientLogins() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.CLIENT_LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordClientLogin(event1);
+        assertMetric("keycloak_client_logins", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.CLIENT_LOGIN, DEFAULT_REALM, "THE_CLIENT_ID");
+        PrometheusExporter.instance().recordClientLogin(event2);
+        assertMetric("keycloak_client_logins", 1, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_client_logins", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
+    public void shouldCorrectlyCountClientLoginAttempts() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.CLIENT_LOGIN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordClientLoginError(event1);
+        assertMetric("keycloak_failed_client_login_attempts", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.CLIENT_LOGIN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found");
+        PrometheusExporter.instance().recordClientLoginError(event2);
+        assertMetric("keycloak_failed_client_login_attempts", 1, tuple("provider", "keycloak"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_failed_client_login_attempts", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
+    public void shouldCorrectlyCountCodeToTokens() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.CODE_TO_TOKEN, DEFAULT_REALM, "THE_CLIENT_ID", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordCodeToToken(event1);
+        assertMetric("keycloak_code_to_tokens", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.CODE_TO_TOKEN, DEFAULT_REALM, "THE_CLIENT_ID");
+        PrometheusExporter.instance().recordCodeToToken(event2);
+        assertMetric("keycloak_code_to_tokens", 1, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_code_to_tokens", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
+    public void shouldCorrectlyCountCodeToTokensErrors() throws IOException {
+        // with id provider defined
+        final Event event1 = createEvent(EventType.CODE_TO_TOKEN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found", tuple("identity_provider", "THE_ID_PROVIDER"));
+        PrometheusExporter.instance().recordCodeToTokenError(event1);
+        assertMetric("keycloak_code_to_tokens_errors", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // without id provider defined
+        final Event event2 = createEvent(EventType.CODE_TO_TOKEN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found");
+        PrometheusExporter.instance().recordCodeToTokenError(event2);
+        assertMetric("keycloak_code_to_tokens_errors", 1, tuple("provider", "keycloak"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_code_to_tokens_errors", 1, tuple("provider", "THE_ID_PROVIDER"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
     public void shouldCorrectlyRecordGenericEvents() throws IOException {
         final Event event1 = createEvent(EventType.UPDATE_EMAIL);
         PrometheusExporter.instance().recordGenericEvent(event1);
