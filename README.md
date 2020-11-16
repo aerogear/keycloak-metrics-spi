@@ -195,6 +195,24 @@ This counter counts the number of response errors (responses where the http stat
 keycloak_response_errors{code="500",method="GET",} 1
 ```
 
+##### keycloak_online_sessions
+This gauge records the number of online sessions.
+
+```c
+# HELP keycloak_online_sessions Total online sessions
+# TYPE keycloak_online_sessions gauge
+keycloak_online_sessions{realm="test",client_id="application1",} 1.0
+```
+
+##### keycloak_offline_sessions
+This gauge records the number of offline sessions.
+
+```c
+# HELP keycloak_offline_sessions Total offline sessions
+# TYPE keycloak_offline_sessions gauge
+keycloak_offline_sessions{realm="test",client_id="application1",} 1.0
+```
+
 ## Grafana Dashboard
 
 You can use this dashboard or create yours https://grafana.com/dashboards/10441

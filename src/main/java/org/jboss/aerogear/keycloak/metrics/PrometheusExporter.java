@@ -2,6 +2,7 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -39,6 +40,8 @@ public final class PrometheusExporter {
     final Counter totalRegistrationsErrors;
     final Counter responseErrors;
     final Histogram requestDuration;
+    final Gauge totalOnlineSessions;
+    final Gauge totalOfflineSessions;
     final PushGateway PUSH_GATEWAY;
 
     private PrometheusExporter() {
@@ -89,6 +92,17 @@ public final class PrometheusExporter {
             .help("Request duration")
             .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
             .labelNames("method")
+            .register();
+
+        totalOnlineSessions = Gauge.build()
+            .name("keycloak_online_sessions")
+            .help("Total online sessions")
+            .labelNames("realm", "client_id")
+            .register();
+        totalOfflineSessions = Gauge.build()
+            .name("keycloak_offline_sessions")
+            .help("Total offline sessions")
+            .labelNames("realm", "client_id")
             .register();
 
         // Counters for all user events
@@ -207,6 +221,23 @@ public final class PrometheusExporter {
         final String provider = getIdentityProvider(event);
 
         totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        pushAsync();
+    }
+
+    /**
+     * Set sessions number
+     *
+     * @param event LoginError event
+     */
+    public void recordSessions(final String realmId, Map<String,Long> onlineSessions, Map<String,Long> offlineSessions) {
+                
+        onlineSessions.forEach((clientId, count) -> {
+            totalOnlineSessions.labels(nullToEmpty(realmId), nullToEmpty(clientId)).set(count);
+        });
+
+        offlineSessions.forEach((clientId, count) -> {
+            totalOfflineSessions.labels(nullToEmpty(realmId), nullToEmpty(clientId)).set(count);
+        });
         pushAsync();
     }
 
