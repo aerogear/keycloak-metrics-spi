@@ -125,6 +125,44 @@ keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_u
 keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found",client_id="application1"} 2.0
 ```
 
+##### keycloak_client_logins
+This counter counts every client login.  
+
+```c
+# HELP keycloak_client_logins Total successful client logins
+# TYPE keycloak_client_logins gauge
+keycloak_client_logins{realm="test",provider="keycloak",client_id="account"} 4.0
+keycloak_client_logins{realm="test",provider="github",client_id="application2"} 7.0
+```
+
+##### keycloak_failed_client_login_attempts
+This counter counts every client login performed that fails, being the error described by the label **error**.  
+```c
+# HELP keycloak_failed_client_login_attempts Total failed client login attempts
+# TYPE keycloak_failed_client_login_attempts gauge
+keycloak_failed_client_login_attempts{realm="test2",provider="keycloak",error="invalid_client_credentials",client_id="application2"} 5.0
+keycloak_failed_client_login_attempts{realm="test2",provider="keycloak",error="client_not_found",client_id="application2"} 3.0
+```
+
+##### keycloak_refresh_tokens
+This counter counts every refresh token.
+
+```c
+# HELP keycloak_refresh_tokens Total number of successful token refreshes
+# TYPE keycloak_refresh_tokens gauge
+keycloak_refresh_tokens{realm="test3",provider="keycloak",client_id="account"} 1.0
+keycloak_refresh_tokens{realm="test3",provider="github",client_id="application3"} 2.0
+```
+
+##### keycloak_refresh_tokens_errors
+This counter counts every refresh token that fails.
+
+```c
+# HELP keycloak_refresh_tokens_errors Total number of failed token refreshes
+# TYPE keycloak_refresh_tokens_errors gauge
+keycloak_refresh_tokens_errors{realm="test3",provider="keycloak",error="invalid_token",client_id="application3"} 3.0
+```
+
 ##### keycloak_registrations
 This counter counts every new user registration. It also distinguishes registrations by the identity provider used by means of the label **provider** and by client with the label **client_id**..
 
@@ -143,6 +181,25 @@ This counter counts every new user registration that fails, being the error desc
 # TYPE keycloak_registrations_errors counter
 keycloak_registrations_errors{realm="test",provider="keycloak",error="invalid_registration",client_id="application1",} 2.0
 keycloak_registrations_errors{realm="test",provider="keycloak",error="email_in_use",client_id="application1",} 3.0
+```
+
+##### keycloak_code_to_tokens
+This counter counts every code to token.
+
+```c
+# HELP keycloak_code_to_tokens Total number of successful code to token
+# TYPE keycloak_code_to_tokens gauge
+keycloak_code_to_tokens{realm="test4",provider="keycloak",client_id="account"} 3.0
+keycloak_code_to_tokens{realm="test4",provider="github",client_id="application4"} 1.0
+```
+
+##### keycloak_code_to_tokens_errors
+This counter counts every code to token performed that fails, being the error described by the label **error**. 
+
+```c
+# HELP keycloak_code_to_tokens_errors Total number of failed code to token
+# TYPE keycloak_code_to_tokens_errors gauge
+keycloak_code_to_tokens_errors{realm="test4",provider="keycloak",error="invalid_client_credentials",client_id="application4"} 7.0
 ```
 
 ##### keycloak_request_duration

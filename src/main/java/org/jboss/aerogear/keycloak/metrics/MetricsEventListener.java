@@ -19,14 +19,32 @@ public class MetricsEventListener implements EventListenerProvider {
             case LOGIN:
                 PrometheusExporter.instance().recordLogin(event);
                 break;
+            case CLIENT_LOGIN:
+                PrometheusExporter.instance().recordClientLogin(event);
+                break;
             case REGISTER:
                 PrometheusExporter.instance().recordRegistration(event);
+                break;
+            case REFRESH_TOKEN:
+                PrometheusExporter.instance().recordRefreshToken(event);
+                break;
+            case CODE_TO_TOKEN:
+                PrometheusExporter.instance().recordCodeToToken(event);
                 break;
             case REGISTER_ERROR:
                 PrometheusExporter.instance().recordRegistrationError(event);
                 break;
             case LOGIN_ERROR:
                 PrometheusExporter.instance().recordLoginError(event);
+                break;
+            case CLIENT_LOGIN_ERROR:
+                PrometheusExporter.instance().recordClientLoginError(event);
+                break;
+            case REFRESH_TOKEN_ERROR:
+                PrometheusExporter.instance().recordRefreshTokenError(event);
+                break;
+            case CODE_TO_TOKEN_ERROR:
+                PrometheusExporter.instance().recordCodeToTokenError(event);
                 break;
             default:
                 PrometheusExporter.instance().recordGenericEvent(event);
