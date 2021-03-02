@@ -79,6 +79,15 @@ the metrics endpoint of each node. To fix this, you can push your metrics to a P
 You can enable pushing to PushGateway by setting the environment variable ```PROMETHEUS_PUSHGATEWAY_ADDRESS``` in the keycloak
 instance. The format is host:port or ip:port of the Pushgateway.
 
+The default value for the grouping key "instance" is the IP. This can be changed setting the environment variable ```PROMETHEUS_GROUPING_KEY_INSTANCE```
+to a fixed value. Additionaly, if the value provided starts with the prefix ```ENVVALUE:```,
+the string after the ```:``` will be used to get the value from the environment variable with that name.
+For example, with the next setting:
+```
+PROMETHEUS_GROUPING_KEY_INSTANCE=ENVVALUE:HOSTNAME
+```
+```instance``` will have the value of the environment variable ```HOSTNAME```
+
 ## Metrics
 
 For each metric, the endpoint returns 2 or more lines of information:

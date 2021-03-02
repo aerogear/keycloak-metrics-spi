@@ -14,18 +14,26 @@ import org.keycloak.events.admin.OperationType;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class PrometheusExporter {
 
     private final static String USER_EVENT_PREFIX = "keycloak_user_event_";
     private final static String ADMIN_EVENT_PREFIX = "keycloak_admin_event_";
     private final static String PROVIDER_KEYCLOAK_OPENID = "keycloak";
+
+    private final static String PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE = "PROMETHEUS_GROUPING_KEY_INSTANCE";
+    private final static Pattern PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE_ENVVALUE_PATTERN = Pattern.compile("ENVVALUE:(.+?)");
 
     private static PrometheusExporter INSTANCE;
 
@@ -412,11 +420,23 @@ public final class PrometheusExporter {
         CompletableFuture.runAsync(() -> push());
     }
 
+    private static String instanceIp() throws UnknownHostException {
+        return InetAddress.getLocalHost().getHostAddress();
+    }
+
+    private static String groupingKey() throws UnknownHostException {
+        return Optional.ofNullable(System.getenv(PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE))
+            .map(envValue -> {
+                Matcher matcher = PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE_ENVVALUE_PATTERN.matcher(envValue);
+                if(matcher.matches()) return System.getenv(matcher.group(1));
+                else return envValue;
+            }).orElse(instanceIp());
+    }
+
     private void push() {
         if(PUSH_GATEWAY != null) {
             try {
-                String instanceIp = InetAddress.getLocalHost().getHostAddress();
-                Map<String, String> groupingKey = Collections.singletonMap("instance", instanceIp);
+                Map<String, String> groupingKey = Collections.singletonMap("instance", groupingKey());
                 PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, "keycloak", groupingKey);
             } catch (IOException e) {
                 logger.error("Unable to send to prometheus PushGateway", e);
