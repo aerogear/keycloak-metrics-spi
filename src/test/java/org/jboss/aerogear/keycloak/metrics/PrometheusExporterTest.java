@@ -51,6 +51,21 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldCorrectlyCountLoginAttemptsForSuccessfulAndFailedAttempts() throws IOException {
+        // with LOGIN event
+        final Event login1 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID");
+        PrometheusExporter.instance().recordLogin(login1);
+        assertMetric("keycloak_login_attempts", 1, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_logins", 1, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+
+        // with LOGIN_ERROR event
+        final Event event2 = createEvent(EventType.LOGIN_ERROR, DEFAULT_REALM, "THE_CLIENT_ID", "user_not_found");
+        PrometheusExporter.instance().recordLoginError(event2);
+        assertMetric("keycloak_login_attempts", 2, tuple("provider", "keycloak"), tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_failed_login_attempts", 1, tuple("provider", "keycloak"), tuple("error", "user_not_found"), tuple("client_id", "THE_CLIENT_ID"));
+    }
+
+    @Test
     public void shouldCorrectlyCountLoginWhenIdentityProviderIsDefined() throws IOException {
         final Event login1 = createEvent(EventType.LOGIN, DEFAULT_REALM, "THE_CLIENT_ID", tuple("identity_provider", "THE_ID_PROVIDER"));
         PrometheusExporter.instance().recordLogin(login1);

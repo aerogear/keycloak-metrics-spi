@@ -114,6 +114,18 @@ Every single internal Keycloak event is being shared through the endpoint, with 
 ### Featured events
 There are however a few events that are particularly more useful from a mobile app perspective. These events have been overriden by the SPI and are described more thoroughly below.
 
+##### keycloak_login_attempts
+
+This counter counts every login attempt performed by a non-admin user. It also distinguishes logins by the utilised
+identity provider by means of the label **provider** and by client with the label **client_id**..
+
+```c
+# HELP keycloak_login_attempts Total number of login attempts
+# TYPE keycloak_login_attempts counter
+keycloak_login_attempts{realm="test",provider="keycloak",client_id="account"} 3.0
+keycloak_login_attempts{realm="test",provider="github",client_id="application1"} 2.0
+```
+
 ##### keycloak_logins
 This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider** and by client with the label **client_id**..
 

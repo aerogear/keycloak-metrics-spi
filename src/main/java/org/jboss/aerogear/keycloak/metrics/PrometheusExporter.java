@@ -42,6 +42,7 @@ public final class PrometheusExporter {
     // these fields are package private on purpose
     final Map<String, Counter> counters = new HashMap<>();
     final Counter totalLogins;
+    final Counter totalLoginAttempts;
     final Counter totalFailedLoginAttempts;
     final Counter totalRegistrations;
     final Counter totalRegistrationsErrors;
@@ -64,6 +65,13 @@ public final class PrometheusExporter {
         // sense to record the same metric in multiple places)
 
         PUSH_GATEWAY = buildPushGateWay();
+
+        // package private on purpose
+        totalLoginAttempts = Counter.build()
+            .name("keycloak_login_attempts")
+            .help("Total number of login attempts")
+            .labelNames("realm", "provider", "client_id")
+            .register();
 
         // package private on purpose
         totalLogins = Counter.build()
@@ -227,6 +235,7 @@ public final class PrometheusExporter {
     public void recordLogin(final Event event) {
         final String provider = getIdentityProvider(event);
 
+        totalLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
         totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
@@ -263,6 +272,7 @@ public final class PrometheusExporter {
     public void recordLoginError(final Event event) {
         final String provider = getIdentityProvider(event);
 
+        totalLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
         totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
