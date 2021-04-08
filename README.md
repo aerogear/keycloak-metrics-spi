@@ -131,7 +131,7 @@ This counter counts every login performed by a non-admin user. It also distingui
 
 ```c
 # HELP keycloak_logins Total successful logins
-# TYPE keycloak_logins gauge
+# TYPE keycloak_logins counter
 keycloak_logins{realm="test",provider="keycloak",client_id="account"} 3.0
 keycloak_logins{realm="test",provider="github",client_id="application1"} 2.0
 ```
@@ -141,7 +141,7 @@ This counter counts every login performed by a non-admin user that fails, being 
 
 ```c
 # HELP keycloak_failed_login_attempts Total failed login attempts
-# TYPE keycloak_failed_login_attempts gauge
+# TYPE keycloak_failed_login_attempts counter
 keycloak_failed_login_attempts{realm="test",provider="keycloak",error="invalid_user_credentials",client_id="application1"} 6.0
 keycloak_failed_login_attempts{realm="test",provider="keycloak",error="user_not_found",client_id="application1"} 2.0
 ```
@@ -151,7 +151,7 @@ This counter counts every client login.
 
 ```c
 # HELP keycloak_client_logins Total successful client logins
-# TYPE keycloak_client_logins gauge
+# TYPE keycloak_client_logins counter
 keycloak_client_logins{realm="test",provider="keycloak",client_id="account"} 4.0
 keycloak_client_logins{realm="test",provider="github",client_id="application2"} 7.0
 ```
@@ -160,7 +160,7 @@ keycloak_client_logins{realm="test",provider="github",client_id="application2"} 
 This counter counts every client login performed that fails, being the error described by the label **error**.  
 ```c
 # HELP keycloak_failed_client_login_attempts Total failed client login attempts
-# TYPE keycloak_failed_client_login_attempts gauge
+# TYPE keycloak_failed_client_login_attempts counter
 keycloak_failed_client_login_attempts{realm="test2",provider="keycloak",error="invalid_client_credentials",client_id="application2"} 5.0
 keycloak_failed_client_login_attempts{realm="test2",provider="keycloak",error="client_not_found",client_id="application2"} 3.0
 ```
@@ -170,7 +170,7 @@ This counter counts every refresh token.
 
 ```c
 # HELP keycloak_refresh_tokens Total number of successful token refreshes
-# TYPE keycloak_refresh_tokens gauge
+# TYPE keycloak_refresh_tokens counter
 keycloak_refresh_tokens{realm="test3",provider="keycloak",client_id="account"} 1.0
 keycloak_refresh_tokens{realm="test3",provider="github",client_id="application3"} 2.0
 ```
@@ -180,7 +180,7 @@ This counter counts every refresh token that fails.
 
 ```c
 # HELP keycloak_refresh_tokens_errors Total number of failed token refreshes
-# TYPE keycloak_refresh_tokens_errors gauge
+# TYPE keycloak_refresh_tokens_errors counter
 keycloak_refresh_tokens_errors{realm="test3",provider="keycloak",error="invalid_token",client_id="application3"} 3.0
 ```
 
@@ -189,7 +189,7 @@ This counter counts every new user registration. It also distinguishes registrat
 
 ```c
 # HELP keycloak_registrations Total registered users
-# TYPE keycloak_registrations gauge
+# TYPE keycloak_registrations counter
 keycloak_registrations{realm="test",provider="keycloak",client_id="application1"} 1.0
 keycloak_registrations{realm="test",provider="github",client_id="application1"} 1.0
 ```
@@ -209,7 +209,7 @@ This counter counts every code to token.
 
 ```c
 # HELP keycloak_code_to_tokens Total number of successful code to token
-# TYPE keycloak_code_to_tokens gauge
+# TYPE keycloak_code_to_tokens counter
 keycloak_code_to_tokens{realm="test4",provider="keycloak",client_id="account"} 3.0
 keycloak_code_to_tokens{realm="test4",provider="github",client_id="application4"} 1.0
 ```
@@ -219,7 +219,7 @@ This counter counts every code to token performed that fails, being the error de
 
 ```c
 # HELP keycloak_code_to_tokens_errors Total number of failed code to token
-# TYPE keycloak_code_to_tokens_errors gauge
+# TYPE keycloak_code_to_tokens_errors counter
 keycloak_code_to_tokens_errors{realm="test4",provider="keycloak",error="invalid_client_credentials",client_id="application4"} 7.0
 ```
 
