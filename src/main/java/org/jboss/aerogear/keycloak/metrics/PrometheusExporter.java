@@ -34,6 +34,8 @@ public final class PrometheusExporter {
 
     private final static String PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE = "PROMETHEUS_GROUPING_KEY_INSTANCE";
     private final static Pattern PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE_ENVVALUE_PATTERN = Pattern.compile("ENVVALUE:(.+?)");
+    
+    private final static String PROMETHEUS_PUSHGATEWAY_JOB = "PROMETHEUS_PUSHGATEWAY_JOB";
 
     private static PrometheusExporter INSTANCE;
 
@@ -446,8 +448,9 @@ public final class PrometheusExporter {
     private void push() {
         if(PUSH_GATEWAY != null) {
             try {
+                String job = Optional.ofNullable(System.getenv(PROMETHEUS_PUSHGATEWAY_JOB)).orElse("keycloak");
                 Map<String, String> groupingKey = Collections.singletonMap("instance", groupingKey());
-                PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, "keycloak", groupingKey);
+                PUSH_GATEWAY.pushAdd(CollectorRegistry.defaultRegistry, job, groupingKey);
             } catch (IOException e) {
                 logger.error("Unable to send to prometheus PushGateway", e);
             }
