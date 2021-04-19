@@ -12,17 +12,20 @@ import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,14 +149,14 @@ public final class PrometheusExporter {
         responseErrors = Counter.build()
             .name("keycloak_response_errors")
             .help("Total number of error responses")
-            .labelNames("code", "method")
+            .labelNames("code", "method", "resource")
             .register();
 
         requestDuration = Histogram.build()
             .name("keycloak_request_duration")
             .help("Request duration")
             .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
-            .labelNames("method")
+            .labelNames("method", "resource")
             .register();
 
         // Counters for all user events
@@ -355,8 +358,8 @@ public final class PrometheusExporter {
      * @param amt    The duration in milliseconds
      * @param method HTTP method of the request
      */
-    public void recordRequestDuration(double amt, String method) {
-        requestDuration.labels(method).observe(amt);
+    public void recordRequestDuration(double amt, String method, String resource) {
+        requestDuration.labels(method, resource).observe(amt);
         pushAsync();
     }
 
@@ -366,8 +369,8 @@ public final class PrometheusExporter {
      * @param code   The returned http status code
      * @param method The request method used
      */
-    public void recordResponseError(int code, String method) {
-        responseErrors.labels(Integer.toString(code), method).inc();
+    public void recordResponseError(int code, String method, String resource) {
+        responseErrors.labels(Integer.toString(code), method, resource).inc();
         pushAsync();
     }
 

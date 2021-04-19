@@ -7,9 +7,15 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class MetricsFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final Logger LOG = Logger.getLogger(MetricsFilter.class);
@@ -41,10 +47,12 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
     public void filter(ContainerRequestContext req, ContainerResponseContext res) {
         int status = res.getStatus();
 
+        String resource = ResourceExtractor.getResource(req.getUriInfo());
+
         // We are only interested in recording the response status if it was an error
         // (either a 4xx or 5xx). No point in counting  the successful responses
         if (status >= 400) {
-            PrometheusExporter.instance().recordResponseError(status, req.getMethod());
+            PrometheusExporter.instance().recordResponseError(status, req.getMethod(), resource);
         }
 
         // Record request duration if timestamp property is present
@@ -54,7 +62,7 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
             long time = (long) req.getProperty(METRICS_REQUEST_TIMESTAMP);
             long dur = System.currentTimeMillis() - time;
             LOG.trace("Duration is calculated as " + dur + " ms.");
-            PrometheusExporter.instance().recordRequestDuration(dur, req.getMethod());
+            PrometheusExporter.instance().recordRequestDuration(dur, req.getMethod(), resource);
         }
     }
 
