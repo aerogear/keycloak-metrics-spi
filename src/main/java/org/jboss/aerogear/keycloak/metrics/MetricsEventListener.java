@@ -59,13 +59,13 @@ public class MetricsEventListener implements EventListenerProvider {
     }
 
     private void logEventDetails(Event event) {
-        logger.infof("Received user event of type %s in realm %s",
+        logger.debugf("Received user event of type %s in realm %s",
                 event.getType().name(),
                 event.getRealmId());
     }
 
     private void logAdminEventDetails(AdminEvent event) {
-        logger.infof("Received admin event of type %s (%s) in realm %s",
+        logger.debugf("Received admin event of type %s (%s) in realm %s",
                 event.getOperationType().name(),
                 event.getResourceType().name(),
                 event.getRealmId());
