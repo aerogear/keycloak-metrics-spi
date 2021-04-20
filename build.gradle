@@ -13,7 +13,7 @@ configurations {
 }
 
 group 'org.jboss.aerogear'
-version '2.3.1-SNAPSHOT'
+version '2.3.2-SNAPSHOT'
 
 apply plugin: 'java'
 
