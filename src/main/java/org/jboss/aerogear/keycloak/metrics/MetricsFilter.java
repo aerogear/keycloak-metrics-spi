@@ -49,8 +49,7 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
 
         String resource = ResourceExtractor.getResource(req.getUriInfo());
 
-        // We are only interested in recording the response status if it was an error
-        // (either a 4xx or 5xx). No point in counting  the successful responses
+        PrometheusExporter.instance().recordResponseTotal(status, req.getMethod(), resource);
         if (status >= 400) {
             PrometheusExporter.instance().recordResponseError(status, req.getMethod(), resource);
         }

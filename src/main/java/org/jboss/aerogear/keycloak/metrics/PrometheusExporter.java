@@ -57,6 +57,7 @@ public final class PrometheusExporter {
     final Counter totalFailedClientLoginAttempts;
     final Counter totalCodeToTokens;
     final Counter totalCodeToTokensErrors;
+    final Counter responseTotal;
     final Counter responseErrors;
     final Histogram requestDuration;
     final PushGateway PUSH_GATEWAY;
@@ -146,6 +147,12 @@ public final class PrometheusExporter {
             .name("keycloak_code_to_tokens_errors")
             .help("Total number of failed code to token")
             .labelNames("realm", "provider", "error", "client_id")
+            .register();
+
+        responseTotal = Counter.build()
+            .name("keycloak_response_total")
+            .help("Total number of responses")
+            .labelNames("code", "method", "resource")
             .register();
 
         responseErrors = Counter.build()
@@ -362,6 +369,17 @@ public final class PrometheusExporter {
      */
     public void recordRequestDuration(double amt, String method, String resource) {
         requestDuration.labels(method, resource).observe(amt);
+        pushAsync();
+    }
+
+    /**
+     * Increase the response total count by a given method and response code
+     *
+     * @param code   The returned http status code
+     * @param method The request method used
+     */
+    public void recordResponseTotal(int code, String method, String resource) {
+        responseTotal.labels(Integer.toString(code), method, resource).inc();
         pushAsync();
     }
 

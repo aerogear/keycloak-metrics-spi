@@ -273,6 +273,16 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldCorrectlyRecordResponseTotal() throws IOException {
+        PrometheusExporter.instance().recordResponseTotal(200, "GET", "admin,admin/serverinfo");
+        PrometheusExporter.instance().recordResponseTotal(500, "POST", "admin,admin/serverinfo");
+        assertGenericMetric("keycloak_response_total", 1,
+            tuple("code", "200"), tuple("method", "GET"), tuple("resource", "admin,admin/serverinfo"));
+        assertGenericMetric("keycloak_response_total", 1,
+            tuple("code", "500"), tuple("method", "POST"), tuple("resource", "admin,admin/serverinfo"));
+    }
+
+    @Test
     public void shouldCorrectlyRecordResponseErrors() throws IOException {
         PrometheusExporter.instance().recordResponseError(500, "POST", "admin,admin/serverinfo");
         assertGenericMetric("keycloak_response_errors", 1,
