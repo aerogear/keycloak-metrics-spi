@@ -273,6 +273,15 @@ This counter counts the number of response errors (responses where the http stat
 keycloak_response_errors{code="500",method="GET",} 1
 ```
 
+##### keycloak_count_users
+This gauge records the count of users.
+
+```c
+# HELP keycloak_count_users Count users
+# TYPE keycloak_count_users gauge
+keycloak_count_users{realm="test",} 1.0
+```
+
 ## Grafana Dashboard
 
 You can use this dashboard or create yours https://grafana.com/dashboards/10441

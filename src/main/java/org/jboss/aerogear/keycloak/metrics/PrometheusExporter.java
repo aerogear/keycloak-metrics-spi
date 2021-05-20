@@ -2,6 +2,7 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -60,6 +61,7 @@ public final class PrometheusExporter {
     final Counter responseTotal;
     final Counter responseErrors;
     final Histogram requestDuration;
+    final Gauge countUsers;
     final PushGateway PUSH_GATEWAY;
 
     private PrometheusExporter() {
@@ -166,6 +168,12 @@ public final class PrometheusExporter {
             .help("Request duration")
             .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
             .labelNames("method", "resource")
+            .register();
+
+        countUsers = Gauge.build()
+            .name("keycloak_count_users")
+            .help("Count users")
+            .labelNames("realm")
             .register();
 
         // Counters for all user events
@@ -410,6 +418,17 @@ public final class PrometheusExporter {
             identityProvider = PROVIDER_KEYCLOAK_OPENID;
         }
         return identityProvider;
+    }
+
+    /**
+     * Set count of users 
+     *
+     * @param realmId The realm
+     * @param count Count users 
+     */
+    public void recordCountUsers(final String realmId, int count) {        
+        countUsers.labels(nullToEmpty(realmId)).set(count);
+        pushAsync();
     }
 
     /**

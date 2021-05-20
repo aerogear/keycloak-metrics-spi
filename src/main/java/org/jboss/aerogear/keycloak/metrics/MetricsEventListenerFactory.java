@@ -10,7 +10,7 @@ public class MetricsEventListenerFactory implements EventListenerProviderFactory
 
     @Override
     public EventListenerProvider create(KeycloakSession session) {
-        return new MetricsEventListener();
+        return new MetricsEventListener(session);
     }
 
     @Override
