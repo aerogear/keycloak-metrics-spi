@@ -40,6 +40,8 @@ public final class PrometheusExporter {
     
     private final static String PROMETHEUS_PUSHGATEWAY_JOB = "PROMETHEUS_PUSHGATEWAY_JOB";
 
+    private static final boolean URI_METRICS_ENABLED = Boolean.getBoolean("URI_METRICS_ENABLED");
+
     private static PrometheusExporter INSTANCE;
 
     private final static Logger logger = Logger.getLogger(PrometheusExporter.class);
@@ -149,24 +151,45 @@ public final class PrometheusExporter {
             .labelNames("realm", "provider", "error", "client_id")
             .register();
 
-        responseTotal = Counter.build()
+        if (URI_METRICS_ENABLED){
+            responseTotal = Counter.build()
+            .name("keycloak_response_total")
+            .help("Total number of responses")
+            .labelNames("code", "method", "resource", "uri")
+            .register();
+
+            responseErrors = Counter.build()
+            .name("keycloak_response_errors")
+            .help("Total number of error responses")
+            .labelNames("code", "method", "resource", "uri")
+            .register();
+
+            requestDuration = Histogram.build()
+            .name("keycloak_request_duration")
+            .help("Request duration")
+            .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
+            .labelNames("code", "method", "resource", "uri")
+            .register();
+        } else {
+            responseTotal = Counter.build()
             .name("keycloak_response_total")
             .help("Total number of responses")
             .labelNames("code", "method", "resource")
             .register();
 
-        responseErrors = Counter.build()
+            responseErrors = Counter.build()
             .name("keycloak_response_errors")
             .help("Total number of error responses")
             .labelNames("code", "method", "resource")
             .register();
 
-        requestDuration = Histogram.build()
+            requestDuration = Histogram.build()
             .name("keycloak_request_duration")
             .help("Request duration")
             .buckets(50, 100, 250, 500, 1000, 2000, 10000, 30000)
-            .labelNames("method", "resource")
+            .labelNames("code", "method", "resource")
             .register();
+        }
 
         // Counters for all user events
         for (EventType type : EventType.values()) {
@@ -367,8 +390,30 @@ public final class PrometheusExporter {
      * @param amt    The duration in milliseconds
      * @param method HTTP method of the request
      */
-    public void recordRequestDuration(double amt, String method, String resource) {
-        requestDuration.labels(method, resource).observe(amt);
+    public void recordRequestDuration(int code, double amt, String method, String resource, String uri) {
+        requestDuration.labels(Integer.toString(code), method, resource, uri).observe(amt);
+        pushAsync();
+    }
+
+    /**
+     * Record the duration between one request and response
+     *
+     * @param amt    The duration in milliseconds
+     * @param method HTTP method of the request
+     */
+    public void recordRequestDuration(int code, double amt, String method, String resource) {
+        requestDuration.labels(Integer.toString(code), method, resource).observe(amt);
+        pushAsync();
+    }
+
+    /**
+     * Increase the response total count by a given method and response code
+     *
+     * @param code   The returned http status code
+     * @param method The request method used
+     */
+    public void recordResponseTotal(int code, String method, String resource, String uri) {
+        responseTotal.labels(Integer.toString(code), method, resource, uri).inc();
         pushAsync();
     }
 
@@ -380,6 +425,17 @@ public final class PrometheusExporter {
      */
     public void recordResponseTotal(int code, String method, String resource) {
         responseTotal.labels(Integer.toString(code), method, resource).inc();
+        pushAsync();
+    }
+
+    /**
+     * Increase the response error count by a given method and response code
+     *
+     * @param code   The returned http status code
+     * @param method The request method used
+     */
+    public void recordResponseError(int code, String method, String resource, String uri) {
+        responseErrors.labels(Integer.toString(code), method, resource, uri).inc();
         pushAsync();
     }
 
