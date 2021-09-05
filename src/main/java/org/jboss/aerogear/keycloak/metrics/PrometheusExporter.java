@@ -37,10 +37,8 @@ public final class PrometheusExporter {
 
     private final static String PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE = "PROMETHEUS_GROUPING_KEY_INSTANCE";
     private final static Pattern PROMETHEUS_PUSHGATEWAY_GROUPINGKEY_INSTANCE_ENVVALUE_PATTERN = Pattern.compile("ENVVALUE:(.+?)");
-    
-    private final static String PROMETHEUS_PUSHGATEWAY_JOB = "PROMETHEUS_PUSHGATEWAY_JOB";
 
-    private static final boolean URI_METRICS_ENABLED = Boolean.getBoolean("URI_METRICS_ENABLED");
+    private final static String PROMETHEUS_PUSHGATEWAY_JOB = "PROMETHEUS_PUSHGATEWAY_JOB";
 
     private static PrometheusExporter INSTANCE;
 
@@ -151,6 +149,7 @@ public final class PrometheusExporter {
             .labelNames("realm", "provider", "error", "client_id")
             .register();
 
+        final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
         if (URI_METRICS_ENABLED){
             responseTotal = Counter.build()
             .name("keycloak_response_total")
