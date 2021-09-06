@@ -265,6 +265,7 @@ public class PrometheusExporterTest {
 
     @Test
     public void shouldCorrectlyRecordResponseDurations() throws IOException {
+        environmentVariables.set("URI_METRICS_ENABLED", "true");
         PrometheusExporter.instance().recordRequestDuration(200, 5, "GET", "admin,admin/serverinfo", "auth/realm");
         assertGenericMetric("keycloak_request_duration_count", 1,
             tuple("code","200"), tuple("method", "GET"), tuple("resource", "admin,admin/serverinfo"), tuple("uri", "auth/realm"));
@@ -274,6 +275,7 @@ public class PrometheusExporterTest {
 
     @Test
     public void shouldCorrectlyRecordResponseTotal() throws IOException {
+        environmentVariables.set("URI_METRICS_ENABLED", "true");
         PrometheusExporter.instance().recordResponseTotal(200, "GET", "admin,admin/serverinfo", "auth/realm");
         PrometheusExporter.instance().recordResponseTotal(500, "POST", "admin,admin/serverinfo", "auth/realm");
         assertGenericMetric("keycloak_response_total", 1,
@@ -284,6 +286,7 @@ public class PrometheusExporterTest {
 
     @Test
     public void shouldCorrectlyRecordResponseErrors() throws IOException {
+        environmentVariables.set("URI_METRICS_ENABLED", "true");
         PrometheusExporter.instance().recordResponseError(500, "POST", "admin,admin/serverinfo", "auth/realm");
         assertGenericMetric("keycloak_response_errors", 1,
             tuple("code", "500"), tuple("method", "POST"), tuple("resource", "admin,admin/serverinfo"), tuple("uri", "auth/realm"));
