@@ -4,13 +4,15 @@ import org.jboss.logging.Logger;
 
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.regex.*;
 
 class ResourceExtractor {
 
     private final static Logger logger = Logger.getLogger(ResourceExtractor.class);
 
     private static final boolean IS_RESOURCE_SCRAPING_DISABLED = Boolean.getBoolean("RESOURCE_SCRAPING_DISABLED");
-
+    private static final boolean URI_METRICS_ENABLED = Boolean.getBoolean("URI_METRICS_ENABLED");
+    private static final boolean URI_METRICS_DETAILED = Boolean.getBoolean("URI_METRICS_DETAILED");
 
     private ResourceExtractor() {
     }
@@ -35,12 +37,12 @@ class ResourceExtractor {
      * @param uriInfo {@link UriInfo} object obtained from JAX-RS
      * @return The resource name.
      */
-    static String getResource(UriInfo uriInfo) {
+    static String getResource(UriInfo uriInfo) {        
         if (!IS_RESOURCE_SCRAPING_DISABLED) {
             List<String> matchedURIs = uriInfo.getMatchedURIs();
             if (matchedURIs.size() >= 2) {
                 // A special case for all static resources - we're not interested in
-                // evey particular resource - just an aggregate with all other endpoints.
+                // every particular resource - just an aggregate with all other endpoints.
                 if ("resources".equals(matchedURIs.get(matchedURIs.size() - 1))) {
                     return "";
                 }
@@ -54,4 +56,29 @@ class ResourceExtractor {
         return "";
     }
 
+    /**
+     * This method obtains a list of resource info from the {@link UriInfo} object and returns the resource URI.
+     * @param uriInfo {@link UriInfo} object obtained from JAX-RS
+     * @return The resource uri.
+     */
+    static String getURI(UriInfo uriInfo) {     
+        if (URI_METRICS_ENABLED) {
+            List<String> matchedURIs = uriInfo.getMatchedURIs();
+            StringBuilder sb = new StringBuilder();
+            if (matchedURIs.get(0).contains("/token"))
+            {
+                String uri = matchedURIs.get(0);
+
+                if(URI_METRICS_DETAILED) {
+                    sb.append(uri);
+                } else {
+                    String[] realm = uri.split("/");
+                    uri=uri.replace(realm[1], "{realm}");
+                    sb.append(uri);
+                }
+            }
+            return sb.toString(); 
+        }
+        return "";
+    }
 }
