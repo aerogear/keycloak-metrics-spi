@@ -11,8 +11,8 @@ class ResourceExtractor {
     private final static Logger logger = Logger.getLogger(ResourceExtractor.class);
 
     private static final boolean IS_RESOURCE_SCRAPING_DISABLED = Boolean.getBoolean("RESOURCE_SCRAPING_DISABLED");
-    private static final boolean URI_METRICS_ENABLED = Boolean.getBoolean("URI_METRICS_ENABLED");
-    private static final boolean URI_METRICS_DETAILED = Boolean.getBoolean("URI_METRICS_DETAILED");
+    private static final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
+    private static final boolean URI_METRICS_DETAILED = Boolean.parseBoolean(System.getenv("URI_METRICS_DETAILED"));
 
     private ResourceExtractor() {
     }
