@@ -65,17 +65,14 @@ class ResourceExtractor {
         if (URI_METRICS_ENABLED) {
             List<String> matchedURIs = uriInfo.getMatchedURIs();
             StringBuilder sb = new StringBuilder();
-            if (matchedURIs.get(0).contains("/token"))
-            {
-                String uri = matchedURIs.get(0);
+            String uri = matchedURIs.get(0);
 
-                if(URI_METRICS_DETAILED) {
-                    sb.append(uri);
-                } else {
-                    String[] realm = uri.split("/");
-                    uri=uri.replace(realm[1], "{realm}");
-                    sb.append(uri);
-                }
+            if(URI_METRICS_DETAILED) {
+                sb.append(uri);
+            } else {
+                String[] realm = uri.split("/");
+                uri=uri.replace(realm[1], "{realm}");
+                sb.append(uri);
             }
             return sb.toString(); 
         }
