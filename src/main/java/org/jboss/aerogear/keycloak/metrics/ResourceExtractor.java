@@ -13,7 +13,8 @@ class ResourceExtractor {
     private static final boolean IS_RESOURCE_SCRAPING_DISABLED = Boolean.getBoolean("RESOURCE_SCRAPING_DISABLED");
     private static final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
     private static final boolean URI_METRICS_DETAILED = Boolean.parseBoolean(System.getenv("URI_METRICS_DETAILED"));
-
+    private static final String URI_METRICS_FILTER = System.getenv("URI_METRICS_FILTER");
+    
     private ResourceExtractor() {
     }
 
@@ -65,20 +66,39 @@ class ResourceExtractor {
         if (URI_METRICS_ENABLED) {
             List<String> matchedURIs = uriInfo.getMatchedURIs();
             StringBuilder sb = new StringBuilder();
-            if (matchedURIs.get(0).contains("/token"))
-            {
-                String uri = matchedURIs.get(0);
 
-                if(URI_METRICS_DETAILED) {
-                    sb.append(uri);
-                } else {
-                    String[] realm = uri.split("/");
-                    uri=uri.replace(realm[1], "{realm}");
-                    sb.append(uri);
+            if ( URI_METRICS_FILTER != null && URI_METRICS_FILTER.length() != 0 ){
+
+                String[] filter = URI_METRICS_FILTER.split(",");
+
+                for (int i = 0; i < filter.length; i++)
+                {
+                    if (matchedURIs.get(0).contains(filter[i])){
+
+                        sb = getURIDetailed(sb, matchedURIs);
+                    }
                 }
+            } else {
+                sb = getURIDetailed(sb, matchedURIs);
             }
             return sb.toString(); 
         }
         return "";
+    }
+
+    private static StringBuilder getURIDetailed(StringBuilder sb, List<String> matchedURIs){
+
+        String uri = matchedURIs.get(0);
+
+        if(URI_METRICS_DETAILED) {
+            sb.append(uri);
+        } else {
+            String[] realm = uri.split("/");
+            if(realm.length != 1){
+                uri=uri.replace(realm[1], "{realm}");
+            }
+            sb.append(uri);
+        }
+        return sb;
     }
 }
