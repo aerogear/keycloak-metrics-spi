@@ -6,12 +6,23 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.Response.Status;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 public class MetricsEndpoint implements RealmResourceProvider {
 
     // The ID of the provider is also used as the name of the endpoint
     public final static String ID = "metrics";
+
+    private static final boolean DISABLE_EXTERNAL_ACCESS = Boolean.parseBoolean(System.getenv("DISABLE_OPENSHIFT_EXTERNAL_ACCESS"));
 
     @Override
     public Object getResource() {
@@ -20,7 +31,15 @@ public class MetricsEndpoint implements RealmResourceProvider {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response get() {
+    public Response get(@Context HttpHeaders headers) {
+
+        if (DISABLE_EXTERNAL_ACCESS){
+            if ( !headers.getRequestHeader("x-forwarded-host").isEmpty() ) {
+                // Request is being forwarded by HA Proxy on Openshift
+                return Response.status(Status.FORBIDDEN).build(); //(stream).build();
+            }
+        }
+
         final StreamingOutput stream = output -> PrometheusExporter.instance().export(output);
         return Response.ok(stream).build();
     }
@@ -28,5 +47,18 @@ public class MetricsEndpoint implements RealmResourceProvider {
     @Override
     public void close() {
         // Nothing to do, no resources to close
+    }
+
+        /**
+     * Write the Prometheus formatted values of all counters and
+     * gauges to the stream
+     *
+     * @param stream Output stream
+     * @throws IOException
+     */
+    public void export(final OutputStream stream) throws IOException {
+        final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
+        //TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
+        writer.flush();
     }
 }

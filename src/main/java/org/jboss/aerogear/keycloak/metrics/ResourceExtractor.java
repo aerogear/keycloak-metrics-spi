@@ -4,7 +4,6 @@ import org.jboss.logging.Logger;
 
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
-import java.util.regex.*;
 
 class ResourceExtractor {
 
@@ -95,7 +94,18 @@ class ResourceExtractor {
         } else {
             String[] realm = uri.split("/");
             if(realm.length != 1){
-                uri=uri.replace(realm[1], "{realm}");
+                if(uri.startsWith("admin/realms/"))
+                {
+                    uri=uri.replace(realm[2], "{realm}");
+                    if(realm.length > 4 && realm[3].equals("clients")) {
+                        uri=uri.replace(realm[4], "{id}");
+                    }
+
+                }
+                if(uri.startsWith("realms/"))
+                {
+                    uri=uri.replace(realm[1], "{realm}");
+                }
             }
             sb.append(uri);
         }
