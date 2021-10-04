@@ -41,6 +41,9 @@ dependencies {
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
+
+    compileOnly 'org.apache.tomcat:tomcat-servlet-api:9.0.37'
+
 }
 
 jar {

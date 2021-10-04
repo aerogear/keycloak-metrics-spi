@@ -364,6 +364,10 @@ keycloak_request_duration_count{code="200",method="GET",resource="admin,admin/se
 keycloak_request_duration_sum{code="200",method="GET",resource="admin,admin/serverinfo",uri="",} 19.0
 ```
 
+## External Access
+
+To disable metrics being externally accessible to a cluster. Set the environment variable 'DISABLE_EXTERNAL_ACCESS'. Once set enable the header 'X-Forwarded-Host' on your proxy. This is enabled by default on HA Proxy on Openshift.
+
 ## Grafana Dashboard
 
 You can use this dashboard or create yours https://grafana.com/dashboards/10441
