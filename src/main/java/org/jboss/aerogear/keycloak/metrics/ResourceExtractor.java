@@ -68,7 +68,6 @@ class ResourceExtractor {
             StringBuilder sb = new StringBuilder();
 
             if (URI_METRICS_FILTER != null && URI_METRICS_FILTER.length() != 0) {
-
                 String[] filter = URI_METRICS_FILTER.split(",");
 
                 for (int i = 0; i < filter.length; i++) {
@@ -99,7 +98,6 @@ class ResourceExtractor {
                     if (realm.length > 4 && realm[3].equals("clients")) {
                         uri = uri.replace(realm[4], "{id}");
                     }
-
                 }
                 if (uri.startsWith("realms/")) {
                     uri = uri.replace(realm[1], "{realm}");

@@ -32,9 +32,8 @@ public class MetricsEndpoint implements RealmResourceProvider {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response get(@Context HttpHeaders headers) {
-
-        if (DISABLE_EXTERNAL_ACCESS){
-            if ( !headers.getRequestHeader("x-forwarded-host").isEmpty() ) {
+        if (DISABLE_EXTERNAL_ACCESS) {
+            if (!headers.getRequestHeader("x-forwarded-host").isEmpty()) {
                 // Request is being forwarded by HA Proxy on Openshift
                 return Response.status(Status.FORBIDDEN).build(); //(stream).build();
             }
@@ -47,18 +46,5 @@ public class MetricsEndpoint implements RealmResourceProvider {
     @Override
     public void close() {
         // Nothing to do, no resources to close
-    }
-
-        /**
-     * Write the Prometheus formatted values of all counters and
-     * gauges to the stream
-     *
-     * @param stream Output stream
-     * @throws IOException
-     */
-    public void export(final OutputStream stream) throws IOException {
-        final Writer writer = new BufferedWriter(new OutputStreamWriter(stream));
-        //TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
-        writer.flush();
     }
 }
