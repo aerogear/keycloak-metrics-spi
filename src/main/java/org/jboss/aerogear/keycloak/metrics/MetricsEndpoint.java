@@ -22,7 +22,7 @@ public class MetricsEndpoint implements RealmResourceProvider {
     // The ID of the provider is also used as the name of the endpoint
     public final static String ID = "metrics";
 
-    private static final boolean DISABLE_EXTERNAL_ACCESS = Boolean.parseBoolean(System.getenv("DISABLE_OPENSHIFT_EXTERNAL_ACCESS"));
+    private static final boolean DISABLE_EXTERNAL_ACCESS = Boolean.parseBoolean(System.getenv("DISABLE_EXTERNAL_ACCESS"));
 
     @Override
     public Object getResource() {
