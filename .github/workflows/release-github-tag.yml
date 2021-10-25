@@ -1,0 +1,49 @@
+name: Publish package as Github release & Docker init container
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release-github-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build a project & run unit tests
+        run: ./gradlew test
+
+      - name: Get the tag name
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      - name: Set version from git tag
+        run: ./gradlew jar -P version=${{ env.TAG }}
+
+      - name: Add jar to Github release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/libs/keycloak-metrics-spi-${{ env.TAG }}.jar
+          asset_name: keycloak-metrics-spi-${{ env.TAG }}.jar
+          tag: ${{ github.ref }}
+
+      - name: Build Docker init container
+        run: |
+          docker build \
+          --build-arg VERSION=${{ env.TAG }} \
+          -f src/main/docker/initContainer.Dockerfile \
+          -t kilmajster/keycloak-metrics-spi:${{ env.TAG }} \
+          -t kilmajster/keycloak-metrics-spi:latest \
+          .
+
+      - name: Log into Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: kilmajster
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push tagged Docker image
+        run: docker push kilmajster/keycloak-metrics-spi:${{ env.TAG }}
+
+      - name: Push latest Docker image
+        run: docker push kilmajster/keycloak-metrics-spi:latest
