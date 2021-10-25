@@ -57,6 +57,35 @@ touch keycloak-metrics-spi-2.0.2.jar.dodeploy
 ```
 - Restart the keycloak service.
 
+#### Using Docker init container
+If you are running Keycloak using Helm charts, here is a ready init container build on busybox. Provider jar file is placed in `/keycloak-metrics-spi` directory, so
+according to official Keycloak [example](https://github.com/codecentric/helm-charts/blob/master/charts/keycloak/README.md#providing-a-custom-theme),
+your Helm chart could look like following:
+```yaml
+extraInitContainers: |
+  - name: keycloak-metrics-spi
+    image: aerogear/keycloak-metrics-spi:latest
+    imagePullPolicy: IfNotPresent
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying keycloak-metrics-spi..."
+        cp -R /keycloak-metrics-spi/*.jar /keycloak-metrics-spi
+    volumeMounts:
+      - name: keycloak-metrics-spi
+        mountPath: /keycloak-metrics-spi
+
+extraVolumeMounts: |
+  - name: keycloak-metrics-spi
+    mountPath: /opt/jboss/keycloak/standalone/deployments
+
+extraVolumes: |
+  - name: keycloak-metrics-spi
+    emptyDir: {}
+``` 
+
 ### Enable metrics-listener event
 
 - To enable the event listener via the GUI interface, go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
