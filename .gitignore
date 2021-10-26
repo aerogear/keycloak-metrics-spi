@@ -3,4 +3,4 @@ build
 *.iml
 .idea
 out/
-bin
+bin/
