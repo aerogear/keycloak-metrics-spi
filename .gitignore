@@ -4,3 +4,9 @@ build
 .idea
 out/
 bin/
+.project
+.settings/org.eclipse.buildship.core.prefs
+.project
+.classpath
+.project
+.settings/org.eclipse.jdt.core.prefs
