@@ -2,7 +2,7 @@
 
 # Keycloak Metrics SPI
 
-A [Service Provider](https://www.keycloak.org/docs/4.8/server_development/index.html#_providers) that adds a metrics endpoint to Keycloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
+A [Service Provider](https://www.keycloak.org/docs/latest/server_development/index.html#_providers) that adds a metrics endpoint to Keycloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
 
 Two distinct providers are defined:
 
@@ -37,7 +37,7 @@ builds the jar and writes it to _build/libs_.
 You can build the project using a different version of Keycloak or Prometheus, running the command:
 
 ```sh
-$ ./gradlew -PkeycloakVersion="4.7.0.Final" -PprometheusVersion="0.3.0" jar
+$ ./gradlew -PkeycloakVersion="15.0.2.Final" -PprometheusVersion="0.12.0" jar
 ```
 
 or by changing the `gradle.properties` file in the root of the project.
