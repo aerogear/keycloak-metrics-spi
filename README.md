@@ -24,6 +24,14 @@ $ ./gradlew test
 
 ## Build
 
+There are two ways to build the project using:
+ * [Gradle](https://gradle.org/)
+ * [Maven](https://maven.apache.org/)
+
+You can choose between the tools the most convenient for you. Read further how to use each of them.
+
+### Gradle
+
 The project is packaged as a jar file and bundles the prometheus client libraries.
 
 ```sh
@@ -32,15 +40,33 @@ $ ./gradlew jar
 
 builds the jar and writes it to _build/libs_.
 
+### Maven
+
+To build the jar file using maven run the following command (will bundle the prometheus client libraries as well):
+
+```sh
+mvn package
+```
+
+It will build the project and write jar to the _./target_.
+
 ### Configurable versions for some packages
 
 You can build the project using a different version of Keycloak or Prometheus, running the command:
+
+#### For Gradle
 
 ```sh
 $ ./gradlew -PkeycloakVersion="4.7.0.Final" -PprometheusVersion="0.3.0" jar
 ```
 
 or by changing the `gradle.properties` file in the root of the project.
+
+#### For Maven
+
+```sh
+mvn clean package -Dkeycloak.version=15.0.0 -Dprometheus.version=0.9.0
+```
 
 ## Install and setup
 
