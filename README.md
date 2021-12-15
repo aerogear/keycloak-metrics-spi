@@ -375,6 +375,25 @@ keycloak_request_duration_count{code="200",method="GET",resource="admin,admin/se
 keycloak_request_duration_sum{code="200",method="GET",resource="admin,admin/serverinfo",uri="",} 19.0
 ```
 
+To replace `users` or `clients` UUID values by a generic `{id}` with ```URI_METRICS_DETAILED``` enabled,
+set ```URI_METRICS_UUID_HIDED``` to `true`
+
+```c
+# HELP keycloak_request_duration Request duration
+# TYPE keycloak_request_duration histogram
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="50.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="100.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="250.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="500.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="1000.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="2000.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="10000.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="30000.0",} 6.0
+keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",le="+Inf",} 6.0
+keycloak_request_duration_count{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",} 6.0
+keycloak_request_duration_sum{code="200",method="GET",resource="admin,admin/realms",uri="admin/realms/master/users/{id}",} 41.0
+```
+
 ## External Access
 
 To disable metrics being externally accessible to a cluster. Set the environment variable 'DISABLE_EXTERNAL_ACCESS'. Once set enable the header 'X-Forwarded-Host' on your proxy. This is enabled by default on HA Proxy on Openshift.
