@@ -376,7 +376,7 @@ keycloak_request_duration_sum{code="200",method="GET",resource="admin,admin/serv
 ```
 
 To replace `users` or `clients` UUID values by a generic `{id}` with ```URI_METRICS_DETAILED``` enabled,
-set ```URI_METRICS_UUID_HIDED``` to `true`
+set ```URI_METRICS_UUID_HIDDEN``` to `true`
 
 ```c
 # HELP keycloak_request_duration Request duration
