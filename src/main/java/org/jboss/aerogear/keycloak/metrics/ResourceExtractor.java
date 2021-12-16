@@ -13,7 +13,7 @@ class ResourceExtractor {
     private static final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
     private static final boolean URI_METRICS_DETAILED = Boolean.parseBoolean(System.getenv("URI_METRICS_DETAILED"));
     private static final String URI_METRICS_FILTER = System.getenv("URI_METRICS_FILTER");
-    private static final boolean URI_METRICS_UUID_HIDED = Boolean.parseBoolean(System.getenv("URI_METRICS_UUID_HIDED"));
+    private static final boolean URI_METRICS_UUID_HIDDEN = Boolean.parseBoolean(System.getenv("URI_METRICS_UUID_HIDDEN"));
 
     private ResourceExtractor() {
     }
@@ -90,7 +90,7 @@ class ResourceExtractor {
         String uri = matchedURIs.get(0);
 
         if (URI_METRICS_DETAILED) {
-            if (URI_METRICS_UUID_HIDED) {
+            if (URI_METRICS_UUID_HIDDEN) {
                 String[] realm = uri.split("/");    
                 if (realm.length > 4 && (realm[3].equals("clients") || realm[3].equals("users"))) {
                     uri = uri.replace(realm[4], "{id}");
