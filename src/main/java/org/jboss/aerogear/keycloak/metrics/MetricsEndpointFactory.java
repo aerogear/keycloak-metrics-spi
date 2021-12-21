@@ -15,11 +15,7 @@ public class MetricsEndpointFactory implements RealmResourceProviderFactory {
 
     @Override
     public void init(Config.Scope config) {
-        ResteasyProviderFactory.getInstance().getContainerRequestFilterRegistry()
-            .registerSingleton(MetricsFilter.instance());
-
-        ResteasyProviderFactory.getInstance().getContainerResponseFilterRegistry()
-            .registerSingleton(MetricsFilter.instance());
+        ResteasyProviderFactory.getInstance().register(MetricsFilter.instance());
     }
 
     @Override

@@ -39,6 +39,9 @@ dependencies {
     bundleLib group: 'io.prometheus', name: 'simpleclient_pushgateway', version: prometheusVersion
     configurations.implementation.extendsFrom(configurations.bundleLib)
 
+    // Keycloak 16.0.0 comes with Wildfly 25 that brings RestEasy v4
+    implementation group: 'org.jboss.resteasy', name:'resteasy-multipart-provider', version: '4.7.3.Final'
+
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
 
