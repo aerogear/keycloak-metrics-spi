@@ -2,7 +2,7 @@
 
 # Keycloak Metrics SPI
 
-A [Service Provider](https://www.keycloak.org/docs/4.8/server_development/index.html#_providers) that adds a metrics endpoint to Keycloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
+A [Service Provider](https://www.keycloak.org/docs/latest/server_development/index.html#_providers) that adds a metrics endpoint to Keycloak. The endpoint returns metrics data ready to be scraped by [Prometheus](https://prometheus.io/).
 
 Two distinct providers are defined:
 
@@ -37,7 +37,7 @@ builds the jar and writes it to _build/libs_.
 You can build the project using a different version of Keycloak or Prometheus, running the command:
 
 ```sh
-$ ./gradlew -PkeycloakVersion="4.7.0.Final" -PprometheusVersion="0.3.0" jar
+$ ./gradlew -PkeycloakVersion="15.0.2.Final" -PprometheusVersion="0.12.0" jar
 ```
 
 or by changing the `gradle.properties` file in the root of the project.
@@ -108,6 +108,7 @@ the metrics endpoint of each node. To fix this, you can push your metrics to a P
 You can enable pushing to PushGateway by setting the environment variable ```PROMETHEUS_PUSHGATEWAY_ADDRESS``` in the keycloak
 instance. The format is host:port or ip:port of the Pushgateway.
 
+#### **Grouping instances**
 The default value for the grouping key "instance" is the IP. This can be changed setting the environment variable ```PROMETHEUS_GROUPING_KEY_INSTANCE```
 to a fixed value. Additionaly, if the value provided starts with the prefix ```ENVVALUE:```,
 the string after the ```:``` will be used to get the value from the environment variable with that name.
@@ -117,6 +118,16 @@ PROMETHEUS_GROUPING_KEY_INSTANCE=ENVVALUE:HOSTNAME
 ```
 ```instance``` will have the value of the environment variable ```HOSTNAME```
 
+#### **Grouping instances by cluster**
+if you have multiple KeyCloak clusters on the same runtime then you might like to groups instances by cluster's name.
+
+That's the purpose of the environment variable ```PROMETHEUS_PUSHGATEWAY_JOB```.
+The default *job* value is *keycloak* for all the instances.
+
+For example for all the instances of a KeyCloak cluster #1 you can set:
+```c
+PROMETHEUS_PUSHGATEWAY_JOB="keycloak-cluster1"
+```
 ## Metrics
 
 For each metric, the endpoint returns 2 or more lines of information:
