@@ -32,18 +32,18 @@ jobs:
           docker build \
           --build-arg VERSION=${{ env.TAG }} \
           -f src/main/docker/initContainer.Dockerfile \
-          -t aerogear/keycloak-metrics-spi:${{ env.TAG }} \
-          -t aerogear/keycloak-metrics-spi:latest \
+          -t kilmajster/keycloak-metrics-spi:${{ env.TAG }} \
+          -t kilmajster/keycloak-metrics-spi:latest \
           .
 
       - name: Log into Docker Hub
         uses: docker/login-action@v1
         with:
-          username: aerogear
+          username: kilmajster
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Push tagged Docker image
-        run: docker push aerogear/keycloak-metrics-spi:${{ env.TAG }}
+        run: docker push kilmajster/keycloak-metrics-spi:${{ env.TAG }}
 
       - name: Push latest Docker image
-        run: docker push aerogear/keycloak-metrics-spi:latest
+        run: docker push kilmajster/keycloak-metrics-spi:latest
