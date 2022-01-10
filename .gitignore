@@ -10,3 +10,5 @@ bin/
 .classpath
 .project
 .settings/org.eclipse.jdt.core.prefs
+/dependency-reduced-pom.xml
+target
