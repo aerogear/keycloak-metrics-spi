@@ -496,7 +496,7 @@ public final class PrometheusExporter {
             }
             try {
                 pg = new PushGateway(new URL(host));
-                logger.info("Pushgatway created with url " + host + ".");
+                logger.info("Pushgateway created with url " + host + ".");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
