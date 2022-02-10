@@ -91,10 +91,7 @@ class ResourceExtractor {
 
         if (URI_METRICS_DETAILED) {
             if (URI_METRICS_UUID_HIDDEN) {
-                String[] realm = uri.split("/");    
-                if (realm.length > 4 && (realm[3].equals("clients") || realm[3].equals("users"))) {
-                    uri = uri.replace(realm[4], "{id}");
-                }
+                uri = uri.replaceAll("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}", "{id}");
                 sb.append(uri);
             } else {
                 sb.append(uri);
