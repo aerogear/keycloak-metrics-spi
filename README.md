@@ -70,6 +70,7 @@ mvn clean package -Dkeycloak.version=15.0.0 -Dprometheus.version=0.9.0
 
 ## Install and setup
 
+### On Keycloak Widfly Distribution
 > This section assumes `/opt/jboss` as the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.
 
 - Drop the [jar](https://github.com/aerogear/keycloak-metrics-spi/releases/latest) into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
@@ -82,6 +83,28 @@ cd /opt/jboss/keycloak/standalone/deployments/
 touch keycloak-metrics-spi-2.0.2.jar.dodeploy
 ```
 - Restart the keycloak service.
+
+### On Keycloak Quarkus Distribution
+
+> We assume the home of keycloak is on the default `/opt/keycloak`
+
+You will need to either copy the `jar` into the build step and run step, or copy it from the build stage. Following the [example docker instructions](https://www.keycloak.org/server/containers)
+No need to add `.dodeploy`.
+
+```
+# On build stage
+COPY keycloak-metrics-spi.jar /opt/keycloak/providers/
+
+# On run stage
+COPY keycloak-metrics-spi.jar /opt/keycloak/providers/
+
+```
+If not copied to both stages keycloak will complain 
+```
+ERROR: Failed to start quarkus
+ERROR: Failed to open /opt/keycloak/lib/../providers/keycloak-metrics-spi.jar
+```
+The endpoint for the metrics is `<url>/<http_relative_path>/realms/<realm>/metrics`
 
 ### Enable metrics-listener event
 
