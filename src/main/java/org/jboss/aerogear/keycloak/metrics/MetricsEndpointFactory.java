@@ -9,23 +9,26 @@ import org.keycloak.services.resource.RealmResourceProviderFactory;
 
 public class MetricsEndpointFactory implements RealmResourceProviderFactory {
 
+    private static final String DISABLE_AUTHENTICATION = "disableAuthentication";
     private static final String BEARER_ENABLED_CONFIGURATION = "bearerEnabled";
     private static final String REALM_CONFIGURATION = "realm";
     private static final String DEFAULT_REALM = "master";
     private static final String ROLE_CONFIGURATION = "role";
     private static final String DEFAULT_ROLE = "prometheus-metrics";
 
+    private Boolean authenticationDisabled;
     private Boolean bearerEnabled;
     private String realm;
     private String role;
 
     @Override
     public RealmResourceProvider create(KeycloakSession session) {
-        return new MetricsEndpoint(session, this.bearerEnabled, this.realm, this.role);
+        return new MetricsEndpoint(session, this.authenticationDisabled, this.bearerEnabled, this.realm, this.role);
     }
 
     @Override
     public void init(Config.Scope config) {
+        this.authenticationDisabled = config.getBoolean(DISABLE_AUTHENTICATION, false);
         this.bearerEnabled = config.getBoolean(BEARER_ENABLED_CONFIGURATION, false);
         this.realm = config.get(REALM_CONFIGURATION, DEFAULT_REALM);
         this.role = config.get(ROLE_CONFIGURATION, DEFAULT_ROLE);

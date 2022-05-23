@@ -108,9 +108,9 @@ The endpoint for the metrics is `<url>/<http_relative_path>/realms/<realm>/metri
 
 ### External Access
 
-By default, the metrics endpoint is accessible to **everyone** with access to your Keycloak instance.
+By default, the metrics endpoint returns HTTP Forbidden responses until authentication has been configured.
 
-Make sure to enable one of the following settings depending on your setup.
+To activate the metrics endpoint, one of the following settings depending on your setup must be enabled.
 
 #### Bearer Authentication
 
@@ -131,6 +131,15 @@ If using Bearer authentication is not an option, you can still protect the endpo
 Once set, requests in which the header 'X-Forwarded-Host' header is set will be denied.
 Thus, to disable access to the metrics the header must be set in a request on your proxy.
 This is enabled by default on HA Proxy on Openshift.
+
+#### Disable Authentication
+
+**NOT recommended**.
+
+If you are sure what you do and have considered the other authentication options, you can disable authentication completely.
+However, this will make your endpoint accessible to everyone with access to your Keycloak instance, if the metrics route is not otherwise protected.
+
+To disable the authentication, set the `KC_SPI_REALM_RESTAPI_EXTENSION_METRICS_AUTHENTICATION_DISABLED` environment variable (or corresponding command line argument) to `true`.
 
 ### Enable metrics-listener event
 

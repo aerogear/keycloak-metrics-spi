@@ -29,13 +29,15 @@ public class MetricsEndpoint implements RealmResourceProvider {
 
     private final static Logger logger = Logger.getLogger(MetricsEndpoint.class);
 
+    private Boolean authenticationDisabled;
     private Boolean bearerEnabled;
     private String role;
     private AuthResult auth;
 
-    public MetricsEndpoint(KeycloakSession session, Boolean bearerEnabled, String realm, String role) {
+    public MetricsEndpoint(KeycloakSession session, Boolean authenticationDisabled, Boolean bearerEnabled, String realm, String role) {
         super();
 
+        this.authenticationDisabled = authenticationDisabled;
         this.bearerEnabled = bearerEnabled;
         if (this.bearerEnabled) {
             RealmModel realmModel = session.realms().getRealmByName(realm);
@@ -78,7 +80,15 @@ public class MetricsEndpoint implements RealmResourceProvider {
                     || !this.auth.getToken().getRealmAccess().isUserInRole(this.role)) {
                 throw new ForbiddenException("Missing required realm role");
             }
+            return;
         }
+
+        if (this.authenticationDisabled) {
+            return;
+        }
+
+        logger.error("Authentication on metrics endpoint is not configured!");
+        throw new ForbiddenException();
     }
 
     @Override
