@@ -231,15 +231,15 @@ public class PrometheusExporterTest {
     public void shouldCorrectlyRecordGenericEvents() throws IOException {
         final Event event1 = createEvent(EventType.UPDATE_EMAIL);
         PrometheusExporter.instance().recordGenericEvent(event1);
-        assertMetric("keycloak_user_event_UPDATE_EMAIL", 1);
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 1, tuple("client_id", "THE_CLIENT_ID"));
         PrometheusExporter.instance().recordGenericEvent(event1);
-        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2);
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2, tuple("client_id", "THE_CLIENT_ID"));
 
 
         final Event event2 = createEvent(EventType.REVOKE_GRANT);
         PrometheusExporter.instance().recordGenericEvent(event2);
-        assertMetric("keycloak_user_event_REVOKE_GRANT", 1);
-        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2);
+        assertMetric("keycloak_user_event_REVOKE_GRANT", 1, tuple("client_id", "THE_CLIENT_ID"));
+        assertMetric("keycloak_user_event_UPDATE_EMAIL", 2, tuple("client_id", "THE_CLIENT_ID"));
     }
 
     @Test
