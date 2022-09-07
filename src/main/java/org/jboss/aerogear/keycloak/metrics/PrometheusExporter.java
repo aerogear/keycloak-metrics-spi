@@ -11,6 +11,8 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RealmProvider;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -234,152 +236,164 @@ public final class PrometheusExporter {
     /**
      * Count generic user event
      *
-     * @param event User event
+     * @param event         User event
+     * @param realmProvider
      */
-    public void recordGenericEvent(final Event event) {
+    public void recordGenericEvent(final Event event, RealmProvider realmProvider) {
         final String counterName = buildCounterName(event.getType());
         if (counters.get(counterName) == null) {
-            logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), nullToEmpty(event.getRealmId()));
+            logger.warnf("Counter for event type %s does not exist. Realm: %s", event.getType().name(), nullToEmpty(getRealmName(event.getRealmId(), realmProvider)));
             return;
         }
-        counters.get(counterName).labels(nullToEmpty(event.getRealmId())).inc();
+        counters.get(counterName).labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider))).inc();
         pushAsync();
     }
 
     /**
      * Count generic admin event
      *
-     * @param event Admin event
+     * @param event         Admin event
+     * @param realmProvider
      */
-    public void recordGenericAdminEvent(final AdminEvent event) {
+    public void recordGenericAdminEvent(final AdminEvent event, RealmProvider realmProvider) {
         final String counterName = buildCounterName(event.getOperationType());
         if (counters.get(counterName) == null) {
             logger.warnf("Counter for admin event operation type %s does not exist. Resource type: %s, realm: %s", event.getOperationType().name(), event.getResourceType().name(), event.getRealmId());
             return;
         }
-        counters.get(counterName).labels(nullToEmpty(event.getRealmId()), event.getResourceType().name()).inc();
+        counters.get(counterName).labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), event.getResourceType().name()).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of currently logged in users
      *
-     * @param event Login event
+     * @param event         Login event
+     * @param realmProvider
      */
-    public void recordLogin(final Event event) {
+    public void recordLogin(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
-        totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalLoginAttempts.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
+        totalLogins.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number registered users
      *
-     * @param event Register event
+     * @param event         Register event
+     * @param realmProvider
      */
-    public void recordRegistration(final Event event) {
+    public void recordRegistration(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrations.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalRegistrations.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of failed registered users attemps
      *
-     * @param event RegisterError event
+     * @param event         RegisterError event
+     * @param realmProvider
      */
-    public void recordRegistrationError(final Event event) {
+    public void recordRegistrationError(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalRegistrationsErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalRegistrationsErrors.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of failed login attempts
      *
-     * @param event LoginError event
+     * @param event         LoginError event
+     * @param realmProvider
      */
-    public void recordLoginError(final Event event) {
+    public void recordLoginError(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
-        totalFailedLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalLoginAttempts.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
+        totalFailedLoginAttempts.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of currently client logged
      *
-     * @param event ClientLogin event
+     * @param event         ClientLogin event
+     * @param realmProvider
      */
-    public void recordClientLogin(final Event event) {
+    public void recordClientLogin(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalClientLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalClientLogins.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of failed login attempts
      *
-     * @param event ClientLoginError event
+     * @param event         ClientLoginError event
+     * @param realmProvider
      */
-    public void recordClientLoginError(final Event event) {
+    public void recordClientLoginError(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalFailedClientLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalFailedClientLoginAttempts.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of refreshes tokens
      *
-     * @param event RefreshToken event
+     * @param event         RefreshToken event
+     * @param realmProvider
      */
-    public void recordRefreshToken(final Event event) {
+    public void recordRefreshToken(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalRefreshTokens.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalRefreshTokens.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of failed refreshes tokens attempts
      *
-     * @param event RefreshTokenError event
+     * @param event         RefreshTokenError event
+     * @param realmProvider
      */
-    public void recordRefreshTokenError(final Event event) {
+    public void recordRefreshTokenError(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalRefreshTokensErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalRefreshTokensErrors.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of code to tokens
      *
-     * @param event CodeToToken event
+     * @param event         CodeToToken event
+     * @param realmProvider
      */
-    public void recordCodeToToken(final Event event) {
+    public void recordCodeToToken(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalCodeToTokens.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
+        totalCodeToTokens.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
     /**
      * Increase the number of failed code to tokens attempts
      *
-     * @param event CodeToTokenError event
+     * @param event         CodeToTokenError event
+     * @param realmProvider
      */
-    public void recordCodeToTokenError(final Event event) {
+    public void recordCodeToTokenError(final Event event, RealmProvider realmProvider) {
         final String provider = getIdentityProvider(event);
 
-        totalCodeToTokensErrors.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
+        totalCodeToTokensErrors.labels(nullToEmpty(getRealmName(event.getRealmId(), realmProvider)), provider, nullToEmpty(event.getError()), nullToEmpty(event.getClientId())).inc();
         pushAsync();
     }
 
@@ -467,6 +481,23 @@ public final class PrometheusExporter {
         return identityProvider;
     }
 
+    /**
+     * Retrieve the real realm name in the event by id from the RealmProvider.
+     *
+     * @param realmId Id of Realm
+     * @param realmProvider RealmProvider instance
+     * @return Realm name
+     */
+    private String getRealmName(String realmId, RealmProvider realmProvider) {
+        RealmModel realm = null;
+        if (realmId != null) {
+             realm = realmProvider.getRealm(realmId);
+        }
+        if (realm != null) {
+            return realm.getName();
+        }
+        return null;
+    }
     /**
      * Write the Prometheus formatted values of all counters and
      * gauges to the stream
