@@ -100,6 +100,18 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>io.prometheus</pattern>
+                                    <shadedPattern>org.jboss.aerogear.io.prometheus</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javax.xml</pattern>
+                                    <shadedPattern>org.jboss.aerogear.javax.xml</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
