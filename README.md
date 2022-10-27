@@ -35,7 +35,7 @@ You can choose between the tools the most convenient for you. Read further how t
 The project is packaged as a jar file and bundles the prometheus client libraries.
 
 ```sh
-$ ./gradlew jar
+$ ./gradlew shadowJar
 ```
 
 builds the jar and writes it to _build/libs_.
