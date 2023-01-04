@@ -430,4 +430,4 @@ To disable metrics being externally accessible to a cluster. Set the environment
 
 ## Grafana Dashboard
 
-You can use this dashboard or create yours https://grafana.com/dashboards/10441
+You can use this dashboard or create yours [https://grafana.com/grafana/dashboards/10441-keycloak-metrics-dashboard/]
