@@ -2,15 +2,20 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.apache.commons.collections4.MapUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -60,6 +65,8 @@ public final class PrometheusExporter {
     final Counter responseTotal;
     final Counter responseErrors;
     final Histogram requestDuration;
+    final Gauge totalOnlineSessions;
+    final Gauge totalOfflineSessions;
     final PushGateway PUSH_GATEWAY;
 
     private PrometheusExporter() {
@@ -147,6 +154,18 @@ public final class PrometheusExporter {
             .name("keycloak_code_to_tokens_errors")
             .help("Total number of failed code to token")
             .labelNames("realm", "provider", "error", "client_id")
+            .register();
+
+        totalOnlineSessions = Gauge.build()
+            .name("keycloak_online_sessions")
+            .help("Total online sessions")
+            .labelNames("realm", "provider", "client_id")
+            .register();
+
+        totalOfflineSessions = Gauge.build()
+            .name("keycloak_offline_sessions")
+            .help("Total offline sessions")
+            .labelNames("realm", "provider", "client_id")
             .register();
 
         final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
@@ -272,6 +291,25 @@ public final class PrometheusExporter {
         totalLoginAttempts.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
         totalLogins.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).inc();
         pushAsync();
+    }
+
+    public void recordSessions(final Event event, final KeycloakSession keycloakSession) {
+        final String provider = getIdentityProvider(event);
+        final RealmModel realmModel = keycloakSession.realms().getRealm(event.getRealmId());
+        final ClientModel clientModel = keycloakSession.clients().getClientByClientId(realmModel, event.getClientId());
+
+        if(clientModel != null) {
+            final Map<String, Long> onlineClientSessionStats = keycloakSession.sessions().getActiveClientSessionStats(realmModel, false);
+            final Optional<Long> onlineSessionCount = Optional.ofNullable(MapUtils.emptyIfNull(onlineClientSessionStats).get(clientModel.getId()));
+
+            final Map<String, Long> offlineClientSessionStats = keycloakSession.sessions().getActiveClientSessionStats(realmModel, true);
+            final Optional<Long> offlineSessionCount = Optional.ofNullable(MapUtils.emptyIfNull(offlineClientSessionStats).get(clientModel.getId()));
+
+            totalOnlineSessions.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).set(onlineSessionCount.orElse(0L));
+            totalOfflineSessions.labels(nullToEmpty(event.getRealmId()), provider, nullToEmpty(event.getClientId())).set(offlineSessionCount.orElse(0L));
+
+            pushAsync();
+        }
     }
 
     /**

@@ -333,6 +333,25 @@ This counter counts the number of response errors (responses where the http stat
 keycloak_response_errors{code="500",method="GET",} 1
 ```
 
+##### keycloak_online_sessions
+This gauge indicates the number of online sessions.
+
+```c
+# HELP keycloak_online_sessions Total online sessions
+# TYPE keycloak_online_sessions gauge
+keycloak_online_sessions{realm="test",client_id="application1",} 1.0
+```
+
+##### keycloak_offline_sessions
+This gauge indicates the number of offline sessions.
+
+```c
+# HELP keycloak_offline_sessions Total offline sessions
+# TYPE keycloak_offline_sessions gauge
+keycloak_offline_sessions{realm="test",client_id="application1",} 1.0
+```
+
+
 #### Metrics URI
 The URI can be added to the metrics by setting the environment variable ```URI_METRICS_ENABLED``` to `true`. 
 This will output a consolidated realm URI value to the metrics. The realm value is replaced with a generic `{realm}` value
