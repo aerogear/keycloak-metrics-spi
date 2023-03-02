@@ -13,11 +13,11 @@ configurations {
 }
 
 group 'org.jboss.aerogear'
-version '2.5.4-SNAPSHOT'
+version '3.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
