@@ -4,12 +4,19 @@ import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.models.KeycloakSession;
 
 public class MetricsEventListener implements EventListenerProvider {
 
     public final static String ID = "metrics-listener";
 
     private final static Logger logger = Logger.getLogger(MetricsEventListener.class);
+
+    private final KeycloakSession keycloakSession;
+
+    public MetricsEventListener(KeycloakSession keycloakSession) {
+        this.keycloakSession = keycloakSession;
+    }
 
     @Override
     public void onEvent(Event event) {
@@ -18,9 +25,14 @@ public class MetricsEventListener implements EventListenerProvider {
         switch (event.getType()) {
             case LOGIN:
                 PrometheusExporter.instance().recordLogin(event);
+                PrometheusExporter.instance().recordSessions(event, keycloakSession);
                 break;
             case CLIENT_LOGIN:
                 PrometheusExporter.instance().recordClientLogin(event);
+                PrometheusExporter.instance().recordSessions(event, keycloakSession);
+                break;
+            case LOGOUT:
+                PrometheusExporter.instance().recordSessions(event, keycloakSession);
                 break;
             case REGISTER:
                 PrometheusExporter.instance().recordRegistration(event);
