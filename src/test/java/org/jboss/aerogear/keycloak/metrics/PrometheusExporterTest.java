@@ -288,7 +288,7 @@ public class PrometheusExporterTest {
     public void shouldCorrectlyRecordResponseErrors() throws IOException {
         environmentVariables.set("URI_METRICS_ENABLED", "true");
         PrometheusExporter.instance().recordResponseError(500, "POST", "admin,admin/serverinfo", "auth/realm");
-        assertGenericMetric("keycloak_response_errors", 1,
+        assertGenericMetric("keycloak_response_errors_total", 1,
             tuple("code", "500"), tuple("method", "POST"), tuple("resource", "admin,admin/serverinfo"), tuple("uri", "auth/realm"));
     }
 
@@ -349,7 +349,7 @@ public class PrometheusExporterTest {
 
             final StringBuilder builder = new StringBuilder();
 
-            builder.append(metricName).append("{");
+            builder.append(metricName).append("_total").append("{");
             builder.append("realm").append("=\"").append(realm).append("\",");
 
             for (Tuple<String, String> label : labels) {

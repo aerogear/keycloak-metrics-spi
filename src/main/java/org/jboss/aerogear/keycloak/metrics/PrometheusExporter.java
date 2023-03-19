@@ -152,7 +152,7 @@ public final class PrometheusExporter {
         final boolean URI_METRICS_ENABLED = Boolean.parseBoolean(System.getenv("URI_METRICS_ENABLED"));
         if (URI_METRICS_ENABLED){
             responseTotal = Counter.build()
-            .name("keycloak_response_total")
+            .name("keycloak_response")
             .help("Total number of responses")
             .labelNames("code", "method", "resource", "uri")
             .register();
@@ -171,7 +171,7 @@ public final class PrometheusExporter {
             .register();
         } else {
             responseTotal = Counter.build()
-            .name("keycloak_response_total")
+            .name("keycloak_response")
             .help("Total number of responses")
             .labelNames("code", "method", "resource")
             .register();

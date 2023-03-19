@@ -7,15 +7,15 @@
     <artifactId>keycloak-metrics-spi</artifactId>
     <groupId>org.jboss.aerogear</groupId>
     <packaging>jar</packaging>
-    <version>2.5.3-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>11</java.version>
-        <keycloak.version>15.0.2</keycloak.version>
-        <prometheus.version>0.9.0</prometheus.version>
+        <java.version>17</java.version>
+        <keycloak.version>21.0.1</keycloak.version>
+        <prometheus.version>0.16.0</prometheus.version>
         <version.compiler.maven.plugin>3.5.1</version.compiler.maven.plugin>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
