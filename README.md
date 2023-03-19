@@ -9,8 +9,8 @@ Two distinct providers are defined:
 * MetricsEventListener to record the internal Keycloak events
 * MetricsEndpoint to expose the data through a custom endpoint
 
-The endpoint lives under `<url>/auth/realms/<realm>/metrics`. It will return data for all realms, no matter which realm
-you use in the URL (you can just default to `/auth/realms/master/metrics`).
+The endpoint is available under `<base url>/realms/<realm>/metrics` (Quarkus) or `<base url>/auth/realms/<realm>/metrics` (Wildfly). 
+It will return data for all realms, no matter which realm you use in the URL.
 
 ## License 
 
