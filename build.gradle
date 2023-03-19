@@ -17,7 +17,7 @@ version '3.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 17
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
