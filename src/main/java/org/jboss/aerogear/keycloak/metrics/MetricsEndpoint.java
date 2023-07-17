@@ -2,8 +2,12 @@ package org.jboss.aerogear.keycloak.metrics;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.keycloak.services.resource.RealmResourceProvider;
 
 public class MetricsEndpoint implements RealmResourceProvider {
