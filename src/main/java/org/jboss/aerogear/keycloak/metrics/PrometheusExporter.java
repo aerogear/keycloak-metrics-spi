@@ -3,6 +3,7 @@ package org.jboss.aerogear.keycloak.metrics;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
+import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -530,6 +531,12 @@ public final class PrometheusExporter {
                 logger.info("Pushgateway created with url " + host + ".");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
+            }
+            String basic_auth_username = System.getenv("PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_USERNAME");
+            String basic_auth_password = System.getenv("PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_PASSWORD");
+            if (basic_auth_username != null && basic_auth_password != null) {
+                logger.info("Enabled basic auth for pushgateway.");
+                pg.setConnectionFactory(new BasicAuthHttpConnectionFactory(basic_auth_username, basic_auth_password));
             }
         }
         return pg;
