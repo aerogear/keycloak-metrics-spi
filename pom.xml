@@ -7,11 +7,11 @@
     <artifactId>keycloak-metrics-spi</artifactId>
     <groupId>org.jboss.aerogear</groupId>
     <packaging>jar</packaging>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
 
     <properties>
         <java.version>17</java.version>
-        <keycloak.version>21.0.1</keycloak.version>
+        <keycloak.version>22.0.0</keycloak.version>
         <prometheus.version>0.16.0</prometheus.version>
         <version.compiler.maven.plugin>3.5.1</version.compiler.maven.plugin>
         <maven.compiler.source>17</maven.compiler.source>
@@ -52,22 +52,28 @@
             <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
-            <version>1.0.0.Final</version>
-            <scope>provided</scope>
+        <dependency><!-- required by 'system-stubs-junit4' -->
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>1.19.0</version>
+            <groupId>uk.org.webcompere</groupId>
+            <artifactId>system-stubs-junit4</artifactId>
+            <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.7.0</version>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
