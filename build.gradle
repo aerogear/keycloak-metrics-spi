@@ -33,15 +33,16 @@ dependencies {
     implementation group: 'org.keycloak', name: 'keycloak-server-spi-private', version: keycloakVersion
     implementation group: 'org.keycloak', name: 'keycloak-server-spi', version: keycloakVersion
     implementation group: 'org.keycloak', name: 'keycloak-services', version: keycloakVersion
-    implementation group: 'org.jboss.spec.javax.ws.rs', name: 'jboss-jaxrs-api_2.0_spec', version: '1.0.0.Final'
     bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_pushgateway', version: prometheusVersion
     configurations.implementation.extendsFrom(configurations.bundleLib)
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.7.0'
+    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    testImplementation group: 'uk.org.webcompere', name: 'system-stubs-junit4', version: '2.0.2'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.4.0'
+    // required by 'system-stubs-junit4'
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
 
     compileOnly 'org.apache.tomcat:tomcat-servlet-api:9.0.37'
 
