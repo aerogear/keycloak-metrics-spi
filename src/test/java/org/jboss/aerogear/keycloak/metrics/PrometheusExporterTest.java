@@ -327,6 +327,20 @@ public class PrometheusExporterTest {
     }
 
     @Test
+    public void shouldBuildPushgatewayWithBasicAuth() throws IOException {
+        final String envVarAddress = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
+        final String address = "localhost:9091";
+        environmentVariables.set(envVarAddress, address);
+        final String envVarUser = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_USERNAME";
+        final String user = "username";
+        environmentVariables.set(envVarUser, user);
+        final String envVarPassword = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_PASSWORD";
+        final String password = "password";
+        environmentVariables.set(envVarPassword, password);
+        Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
+    @Test
     public void shouldBuildPushgatewayWithHttps() throws IOException {
         final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
         final String address = "https://localhost:9091";
