@@ -1,21 +1,14 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.keycloak.services.resource.RealmResourceProvider;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.Response.Status;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 
 public class MetricsEndpoint implements RealmResourceProvider {
 

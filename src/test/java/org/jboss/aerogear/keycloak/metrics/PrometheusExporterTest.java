@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -14,6 +13,7 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
+import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class PrometheusExporterTest {
     }
 
     @Rule
-    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+    public final EnvironmentVariablesRule environmentVariables = new EnvironmentVariablesRule();
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -323,6 +323,20 @@ public class PrometheusExporterTest {
         final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
         final String address = "localhost:9091";
         environmentVariables.set(envVar, address);
+        Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
+    @Test
+    public void shouldBuildPushgatewayWithBasicAuth() throws IOException {
+        final String envVarAddress = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
+        final String address = "localhost:9091";
+        environmentVariables.set(envVarAddress, address);
+        final String envVarUser = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_USERNAME";
+        final String user = "username";
+        environmentVariables.set(envVarUser, user);
+        final String envVarPassword = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_PASSWORD";
+        final String password = "password";
+        environmentVariables.set(envVarPassword, password);
         Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
     }
 

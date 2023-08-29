@@ -1,8 +1,8 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
 class ResourceExtractor {

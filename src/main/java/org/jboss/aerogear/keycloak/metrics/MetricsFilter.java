@@ -1,12 +1,12 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.core.MediaType;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
