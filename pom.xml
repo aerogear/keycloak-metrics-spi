@@ -11,7 +11,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <keycloak.version>22.0.0</keycloak.version>
+        <keycloak.version>23.0.3</keycloak.version>
         <prometheus.version>0.16.0</prometheus.version>
         <version.compiler.maven.plugin>3.5.1</version.compiler.maven.plugin>
         <maven.compiler.source>17</maven.compiler.source>
