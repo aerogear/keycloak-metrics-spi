@@ -11,8 +11,9 @@
 
     <properties>
         <java.version>17</java.version>
-        <keycloak.version>22.0.0</keycloak.version>
+        <keycloak.version>23.0.3</keycloak.version>
         <prometheus.version>0.16.0</prometheus.version>
+        <quarkus-resteasy.version>3.2.9.Final</quarkus-resteasy.version>
         <version.compiler.maven.plugin>3.5.1</version.compiler.maven.plugin>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -52,6 +53,12 @@
             <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive</artifactId>
+            <version>${quarkus-resteasy.version}</version>
+            <scope>provided</scope>
+        </dependency>        
         <dependency><!-- required by 'system-stubs-junit4' -->
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
