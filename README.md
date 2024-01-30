@@ -115,7 +115,7 @@ The endpoint for the metrics is `<url>/<http_relative_path>/realms/<realm>/metri
 ```c
 $ /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
 $ /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
-$ usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+$ /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
 ```
     
 ### PushGateway
