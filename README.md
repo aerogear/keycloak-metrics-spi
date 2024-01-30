@@ -188,14 +188,14 @@ keycloak_login_attempts{realm="test",provider="keycloak",client_id="account"} 3.
 keycloak_login_attempts{realm="test",provider="github",client_id="application1"} 2.0
 ```
 
-##### keycloak_logins
+##### keycloak_logins_total
 This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider** and by client with the label **client_id**..
 
 ```c
-# HELP keycloak_logins Total successful logins
-# TYPE keycloak_logins counter
-keycloak_logins{realm="test",provider="keycloak",client_id="account"} 3.0
-keycloak_logins{realm="test",provider="github",client_id="application1"} 2.0
+# HELP keycloak_logins_total Total successful logins
+# TYPE keycloak_logins_total counter
+keycloak_logins_total{realm="test",provider="keycloak",client_id="account"} 3.0
+keycloak_logins_total{realm="test",provider="github",client_id="application1"} 2.0
 ```
 
 ##### keycloak_failed_login_attempts
