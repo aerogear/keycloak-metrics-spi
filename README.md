@@ -106,6 +106,41 @@ ERROR: Failed to open /opt/keycloak/lib/../providers/keycloak-metrics-spi.jar
 ```
 The endpoint for the metrics is `<url>/<http_relative_path>/realms/<realm>/metrics`
 
+### External Access
+
+By default, the metrics endpoint returns HTTP Forbidden responses until authentication has been configured.
+
+To activate the metrics endpoint, one of the following settings depending on your setup must be enabled.
+
+#### Bearer Authentication
+
+Note: If you use Keycloak < 17 use the corresponding XML settings instead of the environment variables.
+
+You can enable protection of the metrics endpoint via Bearer authentication by setting the `KC_SPI_REALM_RESTAPI_EXTENSION_METRICS_BEARER_ENABLED` environment variable (or corresponding command line argument) to `true`.
+
+By default, the requesting user must be in the `master` realm and have the `prometheus-metrics` role.
+However, you can modify the realm using `KC_SPI_REALM_RESTAPI_EXTENSION_METRICS_REALM` and role using `KC_SPI_REALM_RESTAPI_EXTENSION_METRICS_ROLE`.
+
+To configure your Prometheus instance to obtain an OAuth2 token before querying the metrics endpoint, consult the [official Prometheus OAuth2 configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#oauth2).
+Use a client of type `confidential` that has `Service Accounts Enabled` set to `ON`.
+Then, make sure to include the role configured above in the `Service Account Roles` of that client.
+
+#### `DISABLE_EXTERNAL_ACCESS`
+
+If using Bearer authentication is not an option, you can still protect the endpoint using the `DISABLE_EXTERNAL_ACCESS` environment variable.
+Once set, requests in which the header 'X-Forwarded-Host' header is set will be denied.
+Thus, to disable access to the metrics the header must be set in a request on your proxy.
+This is enabled by default on HA Proxy on Openshift.
+
+#### Disable Authentication
+
+**NOT recommended**.
+
+If you are sure what you do and have considered the other authentication options, you can disable authentication completely.
+However, this will make your endpoint accessible to everyone with access to your Keycloak instance, if the metrics route is not otherwise protected.
+
+To disable the authentication, set the `KC_SPI_REALM_RESTAPI_EXTENSION_METRICS_AUTHENTICATION_DISABLED` environment variable (or corresponding command line argument) to `true`.
+
 ### Enable metrics-listener event
 
 - To enable the event listener via the GUI interface, go to _Manage -> Events -> Config_. The _Event Listeners_ configuration should have an entry named `metrics-listener`.
@@ -425,10 +460,6 @@ keycloak_request_duration_bucket{code="200",method="GET",resource="admin,admin/s
 keycloak_request_duration_count{code="200",method="GET",resource="admin,admin/serverinfo",uri="",} 1.0
 keycloak_request_duration_sum{code="200",method="GET",resource="admin,admin/serverinfo",uri="",} 19.0
 ```
-
-## External Access
-
-To disable metrics being externally accessible to a cluster. Set the environment variable 'DISABLE_EXTERNAL_ACCESS'. Once set enable the header 'X-Forwarded-Host' on your proxy. This is enabled by default on HA Proxy on Openshift.
 
 ## Grafana Dashboard
 
