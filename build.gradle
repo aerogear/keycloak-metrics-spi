@@ -45,6 +45,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
 
     compileOnly 'org.apache.tomcat:tomcat-servlet-api:9.0.37'
+    compileOnly 'io.quarkus:quarkus-resteasy-reactive:3.2.9.Final'
 
 }
 
