@@ -4,10 +4,6 @@ plugins {
     id "net.nemerosa.versioning" version "3.0.0"
 }
 
-repositories {
-    jcenter()
-}
-
 configurations {
     bundleLib
 }
@@ -26,6 +22,7 @@ repositories {
 ext {
     keycloakVersion=project.properties["keycloakVersion"]
     prometheusVersion=project.properties["prometheusVersion"]
+    quarkusResteasyVersion=project.properties["quarkusResteasyVersion"]
 }
 
 
@@ -36,6 +33,7 @@ dependencies {
     bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_pushgateway', version: prometheusVersion
+    compileOnly group: 'io.quarkus', name: 'quarkus-resteasy-reactive', version: quarkusResteasyVersion
     configurations.implementation.extendsFrom(configurations.bundleLib)
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
