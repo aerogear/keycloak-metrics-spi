@@ -11,6 +11,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <keycloak.version>23.0.3</keycloak.version>
         <prometheus.version>0.16.0</prometheus.version>
         <quarkus-resteasy.version>3.2.9.Final</quarkus-resteasy.version>
