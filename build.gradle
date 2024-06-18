@@ -2,10 +2,7 @@ import java.text.SimpleDateFormat
 
 plugins {
     id "net.nemerosa.versioning" version "3.0.0"
-}
-
-repositories {
-    jcenter()
+    id "java"
 }
 
 configurations {
@@ -15,9 +12,10 @@ configurations {
 group 'org.jboss.aerogear'
 version '5.0.1-SNAPSHOT'
 
-apply plugin: 'java'
 
-sourceCompatibility = 11
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
