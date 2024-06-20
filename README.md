@@ -45,7 +45,7 @@ builds the jar and writes it to _build/libs_.
 To build the jar file using maven run the following command (will bundle the prometheus client libraries as well):
 
 ```sh
-mvn package
+./mvnw package
 ```
 
 It will build the project and write jar to the _./target_.
@@ -65,7 +65,7 @@ or by changing the `gradle.properties` file in the root of the project.
 #### For Maven
 
 ```sh
-mvn clean package -Dkeycloak.version=15.0.0 -Dprometheus.version=0.9.0
+-/mvnw clean package -Dkeycloak.version=15.0.0 -Dprometheus.version=0.9.0
 ```
 
 ## Install and setup
