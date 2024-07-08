@@ -9,7 +9,7 @@ Two distinct providers are defined:
 * MetricsEventListener to record the internal Keycloak events
 * MetricsEndpoint to expose the data through a custom endpoint
 
-The endpoint is available under `<base url>/realms/<realm>/metrics` (Quarkus) or `<base url>/auth/realms/<realm>/metrics` (Wildfly). 
+The endpoint is available under `<base url>/realms/<realm>/metrics` (Quarkus). 
 It will return data for all realms, no matter which realm you use in the URL.
 
 ## License 
@@ -69,20 +69,6 @@ or by changing the `gradle.properties` file in the root of the project.
 ```
 
 ## Install and setup
-
-### On Keycloak Widfly Distribution
-> This section assumes `/opt/jboss` as the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.
-
-- Drop the [jar](https://github.com/aerogear/keycloak-metrics-spi/releases/latest) into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
-
-- Touch a dodeploy file into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
-
-```bash
-# If your jar file is `keycloak-metrics-spi-2.0.2.jar`
-cd /opt/jboss/keycloak/standalone/deployments/
-touch keycloak-metrics-spi-2.0.2.jar.dodeploy
-```
-- Restart the keycloak service.
 
 ### On Keycloak Quarkus Distribution
 
