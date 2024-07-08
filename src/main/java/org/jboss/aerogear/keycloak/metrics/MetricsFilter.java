@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class MetricsFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
     private static final Logger LOG = Logger.getLogger(MetricsFilter.class);
 
     private static final String METRICS_REQUEST_TIMESTAMP = "metrics.requestTimestamp";
@@ -21,6 +22,8 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
 
     // relevant response content types to be measured
     private static final Set<MediaType> contentTypes = new HashSet<>();
+    private static final String REDIRECTION_URI = "REDIRECTION";
+    private static final String NOT_FOUND_URI = "NOT_FOUND";
 
     static {
         contentTypes.add(MediaType.APPLICATION_JSON_TYPE);
@@ -48,6 +51,11 @@ public final class MetricsFilter implements ContainerRequestFilter, ContainerRes
 
         String resource = ResourceExtractor.getResource(req.getUriInfo());
         String uri = ResourceExtractor.getURI(req.getUriInfo());
+        if (status >= 300 && status < 400) {
+            uri = REDIRECTION_URI;
+        } else if (status == 404) {
+            uri = NOT_FOUND_URI;
+        }
 
         if (URI_METRICS_ENABLED) {
             PrometheusExporter.instance().recordResponseTotal(status, req.getMethod(), resource, uri);
