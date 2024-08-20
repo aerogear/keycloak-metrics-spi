@@ -21,6 +21,7 @@ repositories {
 
 ext {
     keycloakVersion=project.properties["keycloakVersion"]
+    quarkusResteasyVersion=project.properties["quarkusResteasyVersion"]
     prometheusVersion=project.properties["prometheusVersion"]
 }
 
@@ -29,6 +30,7 @@ dependencies {
     implementation group: 'org.keycloak', name: 'keycloak-server-spi-private', version: keycloakVersion
     implementation group: 'org.keycloak', name: 'keycloak-server-spi', version: keycloakVersion
     implementation group: 'org.keycloak', name: 'keycloak-services', version: keycloakVersion
+    compileOnly group: 'io.quarkus.resteasy.reactive', name: 'resteasy-reactive', version: quarkusResteasyVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_common', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_hotspot', version: prometheusVersion
     bundleLib group: 'io.prometheus', name: 'simpleclient_pushgateway', version: prometheusVersion
