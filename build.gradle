@@ -4,10 +4,6 @@ plugins {
     id "net.nemerosa.versioning" version "3.0.0"
 }
 
-repositories {
-    jcenter()
-}
-
 configurations {
     bundleLib
 }
