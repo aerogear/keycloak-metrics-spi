@@ -1,8 +1,8 @@
 package org.jboss.aerogear.keycloak.metrics;
 
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
 class ResourceExtractor {
@@ -65,21 +65,23 @@ class ResourceExtractor {
     static String getURI(UriInfo uriInfo) {
         if (URI_METRICS_ENABLED) {
             List<String> matchedURIs = uriInfo.getMatchedURIs();
-            StringBuilder sb = new StringBuilder();
+            if (!matchedURIs.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
 
-            if (URI_METRICS_FILTER != null && URI_METRICS_FILTER.length() != 0) {
-                String[] filter = URI_METRICS_FILTER.split(",");
+                if (URI_METRICS_FILTER != null && URI_METRICS_FILTER.length() != 0) {
+                    String[] filter = URI_METRICS_FILTER.split(",");
 
-                for (int i = 0; i < filter.length; i++) {
-                    if (matchedURIs.get(0).contains(filter[i])) {
+                    for (int i = 0; i < filter.length; i++) {
+                        if (matchedURIs.get(0).contains(filter[i])) {
 
-                        sb = getURIDetailed(sb, matchedURIs);
+                            sb = getURIDetailed(sb, matchedURIs);
+                        }
                     }
+                } else {
+                    sb = getURIDetailed(sb, matchedURIs);
                 }
-            } else {
-                sb = getURIDetailed(sb, matchedURIs);
+                return sb.toString();
             }
-            return sb.toString();
         }
         return "";
     }

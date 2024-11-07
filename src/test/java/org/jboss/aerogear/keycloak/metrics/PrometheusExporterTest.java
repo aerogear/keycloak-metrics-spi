@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
@@ -14,6 +13,7 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
+import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,14 +37,14 @@ public class PrometheusExporterTest {
     public void setupRealmProvider() {
         RealmModel realm = mock(RealmModel.class);
         when(realm.getName()).thenReturn(DEFAULT_REALM_NAME);
-        when(realmProvider.getRealm(eq(DEFAULT_REALM_ID))).thenReturn(realm);
+        when(realmProvider.getRealm(DEFAULT_REALM_ID)).thenReturn(realm);
         RealmModel otherRealm = mock(RealmModel.class);
         when(otherRealm.getName()).thenReturn("OTHER_REALM");
-        when(realmProvider.getRealm(eq("OTHER_REALM_ID"))).thenReturn(otherRealm);
+        when(realmProvider.getRealm("OTHER_REALM_ID")).thenReturn(otherRealm);
     }
 
     @Rule
-    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+    public final EnvironmentVariablesRule environmentVariables = new EnvironmentVariablesRule();
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -319,7 +319,7 @@ public class PrometheusExporterTest {
     }
 
     @Test
-    public void shouldBuildPushgateway() throws IOException {
+    public void shouldBuildPushgateway() {
         final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
         final String address = "localhost:9091";
         environmentVariables.set(envVar, address);
@@ -327,7 +327,21 @@ public class PrometheusExporterTest {
     }
 
     @Test
-    public void shouldBuildPushgatewayWithHttps() throws IOException {
+    public void shouldBuildPushgatewayWithBasicAuth() {
+        final String envVarAddress = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
+        final String address = "localhost:9091";
+        environmentVariables.set(envVarAddress, address);
+        final String envVarUser = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_USERNAME";
+        final String user = "username";
+        environmentVariables.set(envVarUser, user);
+        final String envVarPassword = "PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_PASSWORD";
+        final String password = "password";
+        environmentVariables.set(envVarPassword, password);
+        Assert.assertNotNull(PrometheusExporter.instance().PUSH_GATEWAY);
+    }
+
+    @Test
+    public void shouldBuildPushgatewayWithHttps() {
         final String envVar = "PROMETHEUS_PUSHGATEWAY_ADDRESS";
         final String address = "https://localhost:9091";
         environmentVariables.set(envVar, address);
@@ -335,7 +349,7 @@ public class PrometheusExporterTest {
     }
 
     @Test
-    public void shouldNotBuildPushgateway() throws IOException {
+    public void shouldNotBuildPushgateway() {
         Assert.assertNull(PrometheusExporter.instance().PUSH_GATEWAY);
     }
 
@@ -361,7 +375,7 @@ public class PrometheusExporterTest {
     private void assertMetric(String metricName, double metricValue, String realm, Tuple<String, String>... labels) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             PrometheusExporter.instance().export(stream);
-            String result = new String(stream.toByteArray());
+            String result = stream.toString();
 
             final StringBuilder builder = new StringBuilder();
 
@@ -402,16 +416,8 @@ public class PrometheusExporterTest {
         return event;
     }
 
-    private Event createEvent(EventType type, Tuple<String, String>... tuples) {
-        return this.createEvent(type, DEFAULT_REALM_ID, "THE_CLIENT_ID", (String) null, tuples);
-    }
-
     private Event createEvent(EventType type, String realm, String clientId, Tuple<String, String>... tuples) {
         return this.createEvent(type, realm, clientId, (String) null, tuples);
-    }
-
-    private Event createEvent(EventType type, String realm, Tuple<String, String>... tuples) {
-        return this.createEvent(type, realm, "THE_CLIENT_ID", (String) null, tuples);
     }
 
     private Event createEvent(EventType type) {

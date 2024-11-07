@@ -7,15 +7,16 @@
     <artifactId>keycloak-metrics-spi</artifactId>
     <groupId>org.jboss.aerogear</groupId>
     <packaging>jar</packaging>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>6.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>17</java.version>
-        <keycloak.version>21.0.1</keycloak.version>
+        <java.version>21</java.version>
+        <keycloak.version>26.0.0</keycloak.version>
         <prometheus.version>0.16.0</prometheus.version>
+        <quarkus-resteasy.version>3.8.5</quarkus-resteasy.version>
         <version.compiler.maven.plugin>3.5.1</version.compiler.maven.plugin>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -53,21 +54,33 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
-            <version>1.0.0.Final</version>
+            <groupId>io.quarkus.resteasy.reactive</groupId>
+            <artifactId>resteasy-reactive</artifactId>
+            <version>${quarkus-resteasy.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency><!-- required by 'system-stubs-junit4' -->
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>1.19.0</version>
+            <groupId>uk.org.webcompere</groupId>
+            <artifactId>system-stubs-junit4</artifactId>
+            <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.7.0</version>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

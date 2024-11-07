@@ -9,7 +9,7 @@ Two distinct providers are defined:
 * MetricsEventListener to record the internal Keycloak events
 * MetricsEndpoint to expose the data through a custom endpoint
 
-The endpoint is available under `<base url>/realms/<realm>/metrics` (Quarkus) or `<base url>/auth/realms/<realm>/metrics` (Wildfly). 
+The endpoint is available under `<base url>/realms/<realm>/metrics` (Quarkus). 
 It will return data for all realms, no matter which realm you use in the URL.
 
 ## License 
@@ -70,20 +70,6 @@ mvn clean package -Dkeycloak.version=15.0.0 -Dprometheus.version=0.9.0
 
 ## Install and setup
 
-### On Keycloak Widfly Distribution
-> This section assumes `/opt/jboss` as the Keycloak home directory, which is used on the _jboss/keycloak_ reference container on Docker Hub.
-
-- Drop the [jar](https://github.com/aerogear/keycloak-metrics-spi/releases/latest) into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
-
-- Touch a dodeploy file into the _/opt/jboss/keycloak/standalone/deployments/_ subdirectory of your Keycloak installation.
-
-```bash
-# If your jar file is `keycloak-metrics-spi-2.0.2.jar`
-cd /opt/jboss/keycloak/standalone/deployments/
-touch keycloak-metrics-spi-2.0.2.jar.dodeploy
-```
-- Restart the keycloak service.
-
 ### On Keycloak Quarkus Distribution
 
 > We assume the home of keycloak is on the default `/opt/keycloak`
@@ -115,7 +101,7 @@ The endpoint for the metrics is `<url>/<http_relative_path>/realms/<realm>/metri
 ```c
 $ /opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
 $ /opt/jboss/keycloak/bin/kcadm.sh update events/config -s "eventsEnabled=true" -s "adminEventsEnabled=true" -s "eventsListeners+=metrics-listener"
-$ usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
+$ /usr/bin/rm -f /opt/jboss/.keycloak/kcadm.config
 ```
     
 ### PushGateway
@@ -127,6 +113,8 @@ the metrics endpoint of each node. To fix this, you can push your metrics to a P
 
 You can enable pushing to PushGateway by setting the environment variable ```PROMETHEUS_PUSHGATEWAY_ADDRESS``` in the keycloak
 instance. The format is host:port or ip:port of the Pushgateway.
+
+If you need basic authentication you must set `PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_USERNAME` and `PROMETHEUS_PUSHGATEWAY_BASIC_AUTH_PASSWORD`.
 
 #### **Grouping instances**
 The default value for the grouping key "instance" is the IP. This can be changed setting the environment variable ```PROMETHEUS_GROUPING_KEY_INSTANCE```
@@ -186,14 +174,14 @@ keycloak_login_attempts{realm="test",provider="keycloak",client_id="account"} 3.
 keycloak_login_attempts{realm="test",provider="github",client_id="application1"} 2.0
 ```
 
-##### keycloak_logins
+##### keycloak_logins_total
 This counter counts every login performed by a non-admin user. It also distinguishes logins by the utilised identity provider by means of the label **provider** and by client with the label **client_id**..
 
 ```c
-# HELP keycloak_logins Total successful logins
-# TYPE keycloak_logins counter
-keycloak_logins{realm="test",provider="keycloak",client_id="account"} 3.0
-keycloak_logins{realm="test",provider="github",client_id="application1"} 2.0
+# HELP keycloak_logins_total Total successful logins
+# TYPE keycloak_logins_total counter
+keycloak_logins_total{realm="test",provider="keycloak",client_id="account"} 3.0
+keycloak_logins_total{realm="test",provider="github",client_id="application1"} 2.0
 ```
 
 ##### keycloak_failed_login_attempts
